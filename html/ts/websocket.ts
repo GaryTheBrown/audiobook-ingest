@@ -46,6 +46,7 @@ export class WSocket {
                 Type: type,
                 Payload: payload,
             };
+            // console.log("SEND: ", envelope)
             this.webSocket.send(JSON.stringify(envelope));
         }
     }
@@ -88,6 +89,7 @@ export class WSocket {
     };
 
     private onMessage = (e: MessageEvent): void => {
+        // console.log("RCVD: ", e.data);
         try {
             const envelope = JSON.parse(e.data) as RecieveMessageEnvelope;
             const handler = this.messageHandlers[envelope.Type];
@@ -106,7 +108,6 @@ export class WSocket {
                 }
                 return;
             }
-
             const item = new CardTemplate(itemID, itemData) as CardTemplate;
             item.InsertToDom();
             this.cardRegistry.set(itemID, item);
@@ -124,13 +125,14 @@ export class WSocket {
             if (item) {
                 item.Header.AcceptSubmitToken(acceptData.Accept, acceptData.TokenID);
                 if (acceptData.Accept) {
-                    item.Header.Name = acceptData.Name
-                    // TODO HERE IS WHERE WE ARE GOING TO ADD IN THE ITEM DATA IN CONVERTING SECTION FROM AcceptToken
-                    //item.SectionConverting.
-
+                    item.Header.Name = acceptData.Name;
+                    item.SectionConverting.SetImage(acceptData.ImgSrc);
+                    const KeyValueArray: KeyValueTemplate[] = [];
+                    for (const [key, value] of Object.entries(acceptData.Data)) {
+                        KeyValueArray.push(new KeyValueTemplate(key, value));
+                    }
                 }
             }
-
         },
         [RecieveMessageType.ChangeStatus]: (itemID: string, payload: string): void => {
             const statusData = JSON.parse(payload) as ChangeStatus;
@@ -180,5 +182,4 @@ export class WSocket {
             if (item) item.SectionMultichoice.RemoveChoices();
         },
     };
-
 }

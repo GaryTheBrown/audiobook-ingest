@@ -12,6 +12,7 @@ func startOutboundBroadcastWorker() {
 		if err != nil {
 			continue
 		}
+		// log.Printf("MSG: %v", envelope)
 
 		clientMux.Lock()
 		for client := range clients {
