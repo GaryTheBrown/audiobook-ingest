@@ -17,6 +17,7 @@ export class CardTemplate {
     public static SetToLocation(location: HTMLElement): void { CardTemplate.ToLocation_DOM = location; }
 
     private readonly itemID: string;
+    private readonly addedAt: number;
 
     private status: Status;
     private articleNode_DOM: HTMLElement;
@@ -33,6 +34,7 @@ export class CardTemplate {
         this.articleNode_DOM = document.importNode(CardTemplate.Template_DOM.content, true).querySelector('article') as HTMLElement;
         this.itemID = itemID;
         this.status = newItem.Status;
+        this.addedAt = newItem.AddedAt;
         this.articleNode_DOM.dataset.status = StatusFromInt[newItem.Status];
         this.Header = new Header(itemID, newItem, this.articleNode_DOM.querySelector('header') as HTMLElement);
         this.SectionDetecting = new SectionDetecting(this.articleNode_DOM.querySelector('section.detecting') as HTMLElement);
@@ -57,9 +59,15 @@ export class CardTemplate {
         this.articleNode_DOM.remove();
     }
 
-    public InsertToDom(): void {
+    public InsertToDom(skipListner: boolean = false): void {
         CardTemplate.ToLocation_DOM.appendChild(this.articleNode_DOM);
-        this.AddEventListeners();
+        if (!skipListner) {
+            this.AddEventListeners();
+        }
+    }
+
+    public get AddedAt(): number {
+        return this.addedAt;
     }
 
     public get Status(): string {

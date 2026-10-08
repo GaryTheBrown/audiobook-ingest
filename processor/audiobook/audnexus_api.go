@@ -10,35 +10,39 @@ import (
 	"time"
 )
 
+type Author struct {
+	Token string `json:"asin,omitempty"`
+	Name  string `json:"name,omitempty"`
+}
+type Genre struct {
+	Token string `json:"asin,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Type  string `json:"type,omitempty"`
+}
+type Narrator struct {
+	Name string `json:"name,omitempty"`
+}
+
 type AudiobookAudNexusReturn struct {
-	Token            string `json:"asin,omitempty"`
-	Copyright        int    `json:"copyright,omitempty"`
-	Description      string `json:"description,omitempty"`
-	FormatType       string `json:"formatType,omitempty"`
-	Image            string `json:"image,omitempty"`
-	IsAdult          bool   `json:"isAdult,omitempty"`
-	ISBN             string `json:"isbn,omitempty"`
-	Language         string `json:"language,omitempty"`
-	LiteratureType   string `json:"literatureType,omitempty"`
-	PublisherName    string `json:"publisherName,omitempty"`
-	Rating           string `json:"rating,omitempty"`
-	Region           string `json:"region,omitempty"`
-	ReleaseDate      string `json:"releaseDate,omitempty"`
-	RuntimeLengthMin int    `json:"runtimeLengthMin,omitempty"`
-	Summary          string `json:"summary,omitempty"`
-	Title            string `json:"title,omitempty"`
-	Authors          []struct {
-		Token string `json:"asin,omitempty"`
-		Name  string `json:"name,omitempty"`
-	} `json:"authors,omitempty"`
-	Genres []struct {
-		Token string `json:"asin,omitempty"`
-		Name  string `json:"name,omitempty"`
-		Type  string `json:"type,omitempty"`
-	} `json:"genres,omitempty"`
-	Narrators []struct {
-		Name string `json:"name,omitempty"`
-	} `json:"narrators,omitempty"`
+	Token            string     `json:"asin,omitempty"`
+	Authors          []Author   `json:"authors,omitempty"`
+	Copyright        int        `json:"copyright,omitempty"`
+	Description      string     `json:"description,omitempty"`
+	FormatType       string     `json:"formatType,omitempty"`
+	Genres           []Genre    `json:"genres,omitempty"`
+	Image            string     `json:"image,omitempty"`
+	IsAdult          bool       `json:"isAdult,omitempty"`
+	ISBN             string     `json:"isbn,omitempty"`
+	Language         string     `json:"language,omitempty"`
+	LiteratureType   string     `json:"literatureType,omitempty"`
+	Narrators        []Narrator `json:"narrators,omitempty"`
+	PublisherName    string     `json:"publisherName,omitempty"`
+	Rating           string     `json:"rating,omitempty"`
+	Region           string     `json:"region,omitempty"`
+	ReleaseDate      string     `json:"releaseDate,omitempty"`
+	RuntimeLengthMin int        `json:"runtimeLengthMin,omitempty"`
+	Summary          string     `json:"summary,omitempty"`
+	Title            string     `json:"title,omitempty"`
 }
 
 func (ab *AudioBook) fetchBookDetailsByID(token string) (map[string]string, error) {

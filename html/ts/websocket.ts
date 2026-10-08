@@ -9,16 +9,58 @@ export class WSocket {
     private wsProtocol: string;
     private webSocket: WebSocket;
     private cardRegistry = new Map<string, CardTemplate>();
+    private mainContainer_DOM: HTMLElement;
     private statusIndicator_DOM: HTMLElement;
-
+    private currentSortMode: "alphabetical" | "date" = "alphabetical";
+    private sortButton_DOM: HTMLButtonElement;
     private pingIntervalID: number | null = null;
+
+    private naturalCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
     constructor() {
         this.wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        this.statusIndicator_DOM = document.querySelector('header span[data-connection]') as HTMLElement;
+        this.statusIndicator_DOM = document.querySelector('header div span[data-connection]') as HTMLElement;
         this.setIndicatorState("connecting");
         this.webSocket = new WebSocket(this.wsProtocol + window.location.host + '/ws');
         this.pairFunctions();
+
+        this.mainContainer_DOM = document.querySelector('main') as HTMLElement;
+        this.sortButton_DOM = document.querySelector("header div button") as HTMLButtonElement;
+        this.setupSortingController();
+    }
+
+    private setupSortingController(): void {
+
+        if (this.sortButton_DOM) {
+            this.sortButton_DOM.addEventListener("click", () => {
+                if (this.currentSortMode === "alphabetical") {
+                    this.currentSortMode = "date";
+                    this.sortButton_DOM!.dataset.sort = "date";
+                } else {
+                    this.currentSortMode = "alphabetical";
+                    this.sortButton_DOM!.dataset.sort = "alphabetical";
+                }
+
+                console.log(`[SORT SENTRY] Swapped grid arrangement strategy to: ${this.currentSortMode}`);
+                this.RearrangeGridElements();
+            });
+        }
+    }
+
+    public RearrangeGridElements(): void {
+        if (!this.mainContainer_DOM || this.cardRegistry.size === 0) return;
+        const cardsArray = Array.from(this.cardRegistry.values());
+
+        cardsArray.sort((a, b) => {
+            if (this.currentSortMode === "date") {
+                return b.AddedAt - a.AddedAt;
+            } else {
+                return this.naturalCollator.compare(a.Header.Name, b.Header.Name);
+            }
+        });
+        cardsArray.forEach(card => {
+            card.InsertToDom();
+        });
     }
 
     private connect(): void {
@@ -111,6 +153,7 @@ export class WSocket {
             const item = new CardTemplate(itemID, itemData) as CardTemplate;
             item.InsertToDom();
             this.cardRegistry.set(itemID, item);
+            this.RearrangeGridElements();
         },
         [RecieveMessageType.RemoveItem]: (itemID: string, payload: string): void => {
             const item = this.cardRegistry.get(itemID) as CardTemplate;

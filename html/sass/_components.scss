@@ -8,8 +8,10 @@ article {
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     box-sizing: border-box;
+    break-inside: avoid;
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
 
     &:hover {
         border-color: $card-hover-border;
