@@ -132,8 +132,7 @@ func (ab *AudioBook) checkID3Tags(item *data.Item) (foundID bool, foundMeta bool
 		if field, exists := tagMap[key]; exists {
 			if matched := asinRegex.FindString(strings.ToUpper(field)); matched != "" {
 				item.AddDetactingLog("🎯", fmt.Sprintf("Audible ASIN match isolated inside embedded audio tag '%s': %s", key, matched))
-				item.SetTokenID(matched)
-				foundID = true
+				foundID = item.SetTokenID(matched)
 				return
 			}
 		}

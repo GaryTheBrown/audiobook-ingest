@@ -136,20 +136,7 @@ func (ab *AudioBook) RunOnlineMetadataSearch(item *data.Item) bool {
 		return false
 
 	case 1:
-		item.AddDetactingLog("🎯", fmt.Sprintf("Audiobookshelf found EXACT single match! Selected Asin: %s -> '%s'", choices[0].TokenID, choices[0].Data["Title"]))
-
-		var CheckSingle bool = false
-		if CheckSingle {
-			item.SetChoices(choices)
-
-			item.SetTokenID(choices[0].TokenID)
-			item.SetStatus(status.MultiChoice)
-		} else {
-			item.SetTokenID(choices[0].TokenID)
-			item.SetStatus(status.Converting)
-		}
-
-		return true
+		return item.SetTokenID(choices[0].TokenID)
 
 	default:
 		item.AddDetactingLog("💡", fmt.Sprintf("Audiobookshelf found %d match candidates. Diverting to dashboard triage selection grid.", len(choices)))

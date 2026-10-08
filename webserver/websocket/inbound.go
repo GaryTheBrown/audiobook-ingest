@@ -69,7 +69,6 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 			var payload structs.SelectChoice
 			if err := json.Unmarshal([]byte(env.Payload), &payload); err == nil {
 				item.SetTokenID(payload.Choice)
-				item.SetStatus(status.Converting)
 			}
 		case enum.ManualSearch:
 			var criteria map[string]string

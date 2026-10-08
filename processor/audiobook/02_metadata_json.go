@@ -71,8 +71,7 @@ func (ab *AudioBook) checkMetadataJson(item *data.Item) (foundID bool, foundMeta
 
 	if matchedASIN != "" {
 		item.AddDetactingLog("🎯", fmt.Sprintf("Audible ASIN match isolated inside JSON text: %s", matchedASIN))
-		item.SetTokenID(matchedASIN)
-		foundID = true
+		foundID = item.SetTokenID(matchedASIN)
 		return
 	}
 

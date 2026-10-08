@@ -147,7 +147,7 @@ func (i *Item) TokenID() string {
 	defer i.mu.RUnlock()
 	return i.tokenID
 }
-func (i *Item) setTokenID(id string, isUserOverride bool) {
+func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 	trimmedID := strings.TrimSpace(id)
 
 	exists, name, imgSrc, data := CheckTokenID(trimmedID)
@@ -155,7 +155,7 @@ func (i *Item) setTokenID(id string, isUserOverride bool) {
 		if isUserOverride {
 			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
 		}
-		return
+		return false
 	}
 
 	i.mu.Lock()
@@ -165,7 +165,7 @@ func (i *Item) setTokenID(id string, isUserOverride bool) {
 	i.foundMetadata = data
 	i.mu.Unlock()
 
-	if SendMessage != nil && trimmedID != "" {
+	if SendMessage != nil {
 		acceptPayload := structs.AcceptToken{
 			Accept:  true,
 			TokenID: trimmedID,
@@ -175,15 +175,16 @@ func (i *Item) setTokenID(id string, isUserOverride bool) {
 		}
 
 		SendMessage(i.id, enum.AcceptToken, acceptPayload)
-		i.SetStatus(status.Converting)
 	}
+	i.SetStatus(status.Converting)
+	return true
 }
-func (i *Item) SetTokenIDManual(id string) {
-	i.setTokenID(id, true)
+func (i *Item) SetTokenIDManual(id string) bool {
+	return i.setTokenID(id, true)
 }
 
-func (i *Item) SetTokenID(id string) {
-	i.setTokenID(id, false)
+func (i *Item) SetTokenID(id string) bool {
+	return i.setTokenID(id, false)
 }
 
 func (i *Item) FoundImgSrc() string {
