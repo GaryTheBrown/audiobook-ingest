@@ -12,7 +12,7 @@ import (
 
 var (
 	SendMessage  func(itemID string, sendType enum.SendType, payloadObj any)
-	CheckTokenID func(tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
+	CheckTokenID func(item *Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
 )
 
 type Item struct {
@@ -32,6 +32,8 @@ type Item struct {
 	metadata      map[string]string
 	detectingLog  []structs.DetectingLogs
 	choices       []structs.Choice
+
+	finalMetadata any
 }
 
 func NewItem(fullPath, name, path string, reqConversion bool) *Item {
@@ -150,7 +152,7 @@ func (i *Item) TokenID() string {
 func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 	trimmedID := strings.TrimSpace(id)
 
-	exists, name, imgSrc, metadata := CheckTokenID(trimmedID)
+	exists, name, imgSrc, metadata := CheckTokenID(i, trimmedID)
 	if !exists {
 		if isUserOverride {
 			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
@@ -285,4 +287,16 @@ func (i *Item) DetectingLogs() []structs.DetectingLogs {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	return i.detectingLog
+}
+
+func (i *Item) FinalMetadata() any {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	return i.finalMetadata
+}
+
+func (i *Item) SetFinalMetadata(data any) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	i.finalMetadata = data
 }

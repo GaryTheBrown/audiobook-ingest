@@ -2,6 +2,7 @@ package audiobook
 
 import (
 	"audiobook-ingest/data"
+	abstructs "audiobook-ingest/processor/audiobook/structs"
 	"audiobook-ingest/status"
 	"audiobook-ingest/structs"
 	"encoding/json"
@@ -11,18 +12,6 @@ import (
 	"strings"
 	"time"
 )
-
-type AudiobookshelfMatchResponse struct {
-	Asin        string `json:"asin"`
-	Title       string `json:"title"`
-	Subtitle    string `json:"subtitle"`
-	Author      string `json:"author"`
-	Narrator    string `json:"narrator"`
-	SeriesName  string `json:"seriesName"`
-	SeriesOrder string `json:"seriesOrder"`
-	PublishYear string `json:"publishYear"`
-	Cover       string `json:"cover"`
-}
 
 func (ab *AudioBook) queryAudiobookshelfHTTP(searchTerm string) ([]structs.Choice, error) {
 	targetURL := fmt.Sprintf("%s/api/search/books?provider=audible&%s", AUDIOBOOKSHELF_URL, searchTerm)
@@ -50,7 +39,7 @@ func (ab *AudioBook) queryAudiobookshelfHTTP(searchTerm string) ([]structs.Choic
 		return nil, fmt.Errorf("local server rejected request with status marker: %d", resp.StatusCode)
 	}
 
-	var rawResults []AudiobookshelfMatchResponse
+	var rawResults []abstructs.AudiobookshelfMatchReturn
 	if err := json.NewDecoder(resp.Body).Decode(&rawResults); err != nil {
 		return nil, err
 	}

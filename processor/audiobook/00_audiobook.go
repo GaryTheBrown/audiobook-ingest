@@ -1,6 +1,7 @@
 package audiobook
 
 import (
+	"audiobook-ingest/data"
 	"audiobook-ingest/structs"
 	"os"
 	"strings"
@@ -60,12 +61,12 @@ func (ab *AudioBook) NewConversionState() any {
 	}
 }
 
-func (ab *AudioBook) CheckTokenID(tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string) {
+func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string) {
 	exists = false
 	name = ""
 	imgSrc = ""
 	metadata = map[string]string{}
-	if allData, err := ab.fetchBookDetailsByID(tokenID); err == nil {
+	if allData, err := ab.fetchBookDetailsByID(item, tokenID); err == nil {
 		exists = true
 		for key, value := range allData {
 			switch key {

@@ -20,5 +20,5 @@ type Interface interface {
 	Path(path string) error
 	DetectMetadata(item *data.Item)
 	ExecuteManualSearch(item *data.Item, criteria map[string]string)
-	CheckTokenID(tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
+	CheckTokenID(item *data.Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
 }
