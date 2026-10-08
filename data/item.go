@@ -175,6 +175,7 @@ func (i *Item) setTokenID(id string, isUserOverride bool) {
 		}
 
 		SendMessage(i.id, enum.AcceptToken, acceptPayload)
+		i.SetStatus(status.Converting)
 	}
 }
 func (i *Item) SetTokenIDManual(id string) {
