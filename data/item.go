@@ -150,7 +150,7 @@ func (i *Item) TokenID() string {
 func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 	trimmedID := strings.TrimSpace(id)
 
-	exists, name, imgSrc, data := CheckTokenID(trimmedID)
+	exists, name, imgSrc, metadata := CheckTokenID(trimmedID)
 	if !exists {
 		if isUserOverride {
 			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
@@ -162,7 +162,7 @@ func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 	i.tokenID = trimmedID
 	i.name = name
 	i.foundImgSrc = imgSrc
-	i.foundMetadata = data
+	i.foundMetadata = metadata
 	i.mu.Unlock()
 
 	if SendMessage != nil {
@@ -171,7 +171,7 @@ func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 			TokenID: trimmedID,
 			Name:    name,
 			ImgSrc:  imgSrc,
-			Data:    data,
+			Data:    metadata,
 		}
 
 		SendMessage(i.id, enum.AcceptToken, acceptPayload)

@@ -131,6 +131,7 @@ export class WSocket {
                     for (const [key, value] of Object.entries(acceptData.Data)) {
                         KeyValueArray.push(new KeyValueTemplate(key, value));
                     }
+                    item.SectionConverting.AddMetadata(KeyValueArray);
                 }
             }
         },

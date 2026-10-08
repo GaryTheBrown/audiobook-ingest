@@ -5,9 +5,41 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
+
+type AudiobookAudNexusReturn struct {
+	Token            string `json:"asin,omitempty"`
+	Copyright        int    `json:"copyright,omitempty"`
+	Description      string `json:"description,omitempty"`
+	FormatType       string `json:"formatType,omitempty"`
+	Image            string `json:"image,omitempty"`
+	IsAdult          bool   `json:"isAdult,omitempty"`
+	ISBN             string `json:"isbn,omitempty"`
+	Language         string `json:"language,omitempty"`
+	LiteratureType   string `json:"literatureType,omitempty"`
+	PublisherName    string `json:"publisherName,omitempty"`
+	Rating           string `json:"rating,omitempty"`
+	Region           string `json:"region,omitempty"`
+	ReleaseDate      string `json:"releaseDate,omitempty"`
+	RuntimeLengthMin int    `json:"runtimeLengthMin,omitempty"`
+	Summary          string `json:"summary,omitempty"`
+	Title            string `json:"title,omitempty"`
+	Authors          []struct {
+		Token string `json:"asin,omitempty"`
+		Name  string `json:"name,omitempty"`
+	} `json:"authors,omitempty"`
+	Genres []struct {
+		Token string `json:"asin,omitempty"`
+		Name  string `json:"name,omitempty"`
+		Type  string `json:"type,omitempty"`
+	} `json:"genres,omitempty"`
+	Narrators []struct {
+		Name string `json:"name,omitempty"`
+	} `json:"narrators,omitempty"`
+}
 
 func (ab *AudioBook) fetchBookDetailsByID(token string) (map[string]string, error) {
 	if token == "" {
@@ -37,71 +69,47 @@ func (ab *AudioBook) fetchBookDetailsByID(token string) (map[string]string, erro
 		return nil, fmt.Errorf("external asset index server returned non-200 status code: %d", resp.StatusCode)
 	}
 
-	var res struct {
-		Title       string `json:"title"`
-		Subtitle    string `json:"subtitle"`
-		ReleaseDate string `json:"releaseDate"`
-		Description string `json:"summary"`
-		Authors     []struct {
-			Name string `json:"name"`
-		} `json:"authors"`
-		Narrators []struct {
-			Name string `json:"name"`
-		} `json:"narrators"`
-		Series struct {
-			Name     string `json:"name"`
-			Sequence string `json:"sequence"`
-		} `json:"series"`
-	}
+	var res AudiobookAudNexusReturn
 
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err
 	}
 
+	var tagRegexp = regexp.MustCompile(`<[^>]*>`)
+
 	choice := map[string]string{
-		"Token":       token,
-		"Title":       strings.TrimSpace(res.Title),
-		"Year":        strings.TrimSpace(res.ReleaseDate),
-		"Description": strings.TrimSpace(res.Description),
-		"ImageURL":    cleanBaseURL + url.PathEscape(strings.TrimSpace(token)) + "/image",
-		"Author":      "Unknown Author",
-		"Narrator":    "Unknown Narrator",
+		"Copyright":        fmt.Sprintf("%d", res.Copyright),
+		"Description":      res.Description,
+		"FormatType":       res.FormatType,
+		"Image":            res.Image,
+		"IsAdult":          fmt.Sprintf("%t", res.IsAdult),
+		"ISBN":             res.ISBN,
+		"Language":         res.Language,
+		"LiteratureType":   res.LiteratureType,
+		"PublisherName":    res.PublisherName,
+		"Rating":           res.Rating,
+		"Region":           res.Region,
+		"ReleaseDate":      res.ReleaseDate,
+		"RuntimeLengthMin": fmt.Sprintf("%d", res.RuntimeLengthMin),
+		"Summary":          tagRegexp.ReplaceAllString(res.Summary, ""),
+		"Title":            res.Title,
 	}
 
-	if res.Subtitle != "" {
-		choice["Title"] = fmt.Sprintf("%s: %s", choice["Title"], strings.TrimSpace(res.Subtitle))
+	var tmpAuthors []string
+	for _, v := range res.Authors {
+		tmpAuthors = append(tmpAuthors, v.Name)
 	}
-	if len(choice["Year"]) >= 4 {
-		choice["Year"] = choice["Year"][:4]
+	choice["Authors"] = strings.Join(tmpAuthors, ",")
+	var tmpGenres []string
+	for _, v := range res.Genres {
+		tmpGenres = append(tmpGenres, v.Name)
 	}
-
-	var auths []string
-	for _, a := range res.Authors {
-		if n := strings.TrimSpace(a.Name); n != "" {
-			auths = append(auths, n)
-		}
+	choice["Genres"] = strings.Join(tmpGenres, ",")
+	var tmpNarrators []string
+	for _, v := range res.Narrators {
+		tmpNarrators = append(tmpNarrators, v.Name)
 	}
-	if len(auths) > 0 {
-		choice["Author"] = strings.Join(auths, ", ")
-	}
-
-	var narrs []string
-	for _, n := range res.Narrators {
-		if name := strings.TrimSpace(n.Name); name != "" {
-			narrs = append(narrs, name)
-		}
-	}
-	if len(narrs) > 0 {
-		choice["Narrator"] = strings.Join(narrs, ", ")
-	}
-
-	if res.Series.Name != "" {
-		if res.Series.Sequence != "" {
-			choice["Series"] = fmt.Sprintf("%s (Book %s)", strings.TrimSpace(res.Series.Name), strings.TrimSpace(res.Series.Sequence))
-		} else {
-			choice["Series"] = strings.TrimSpace(res.Series.Name)
-		}
-	}
+	choice["Narrators"] = strings.Join(tmpNarrators, ",")
 
 	return choice, nil
 }

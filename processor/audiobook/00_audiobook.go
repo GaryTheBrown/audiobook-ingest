@@ -66,11 +66,12 @@ func (ab *AudioBook) CheckTokenID(tokenID string) (exists bool, name string, img
 	imgSrc = ""
 	metadata = map[string]string{}
 	if allData, err := ab.fetchBookDetailsByID(tokenID); err == nil {
+		exists = true
 		for key, value := range allData {
 			switch key {
 			case "Title":
 				name = value
-			case "image":
+			case "Image":
 				imgSrc = value
 			default:
 				metadata[key] = value
