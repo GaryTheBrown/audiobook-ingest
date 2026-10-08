@@ -55,12 +55,6 @@ func (ab *AudioBook) GetManualSearchFields() []structs.ManualSearchField {
 	}
 }
 
-func (ab *AudioBook) NewConversionState() any {
-	return &ConversionState{
-		totalSeconds: 0,
-	}
-}
-
 func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string) {
 	exists = false
 	name = ""
@@ -80,4 +74,8 @@ func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) (exists bool,
 		}
 	}
 	return
+}
+
+func (ab *AudioBook) Convert(item *data.Item) error {
+	return nil
 }
