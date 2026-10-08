@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	log.Println("Ingestor Initialized: Launching pre-flight system scans...")
+	log.Println("TODO MAKE THIS TITLE PRETTY")
 	webserver.InitTemplates(HTMLFilesystem)
 	metadataDetector := metadata.NewDetector()
 	metadataDetector.StartWorker()

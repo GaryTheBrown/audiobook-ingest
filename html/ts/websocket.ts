@@ -67,7 +67,6 @@ export class WSocket {
 
             if (stuckIDs.length > 0) {
                 const serializedPayload = JSON.stringify(stuckIDs);
-                console.log("stuckIDs: ", stuckIDs);
                 this.SendPayload("SYSTEM", SendMessageType.DetectingStuck, serializedPayload);
             }
         }, 500);
@@ -137,7 +136,7 @@ export class WSocket {
         [RecieveMessageType.ChangeStatus]: (itemID: string, payload: string): void => {
             const statusData = JSON.parse(payload) as ChangeStatus;
             const item = this.cardRegistry.get(itemID) as CardTemplate;
-            if (item) item.Status = statusData.ToStatus;
+            if (item) item.Status = statusData.Status;
         },
         [RecieveMessageType.AddMetadata]: (itemID: string, payload: string): void => {
             const rawFieldsData = JSON.parse(payload) as Record<string, string>;

@@ -31,7 +31,7 @@ func AddWebsocket(ws *websocket.Conn) {
 		s := item.Status()
 		basePayload := structs.CreateItem{
 			AddedAt: item.AddedAt(),
-			Title:   item.Name(),
+			Name:    item.Name(),
 			Path:    item.Path(),
 			Image:   item.Image(),
 			Status:  s,
@@ -42,6 +42,9 @@ func AddWebsocket(ws *websocket.Conn) {
 			acceptPayload := structs.AcceptToken{
 				Accept:  true,
 				TokenID: item.TokenID(),
+				Name:    item.Name(),
+				ImgSrc:  item.FoundImgSrc(),
+				Data:    map[string]string{},
 			}
 			_ = sendNumericalEnvelope(ws, item.ID(), enum.AcceptToken, acceptPayload)
 		}

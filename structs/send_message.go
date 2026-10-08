@@ -13,7 +13,7 @@ type SendMessageEnvelope struct {
 
 type CreateItem struct {
 	AddedAt int64         `json:"AddedAt"`
-	Title   string        `json:"Title"`
+	Name    string        `json:"Name"`
 	Path    string        `json:"Path"`
 	Image   string        `json:"Image"`
 	Status  status.Ingest `json:"Status"`

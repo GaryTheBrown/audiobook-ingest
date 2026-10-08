@@ -27,7 +27,7 @@ RUN mkdir -p html/css html/js\
 FROM alpine:latest
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache ffmpeg ca-certificates wget gcompat \
+RUN apk add --no-cache ffmpeg ca-certificates wget gcompat tzdata \
     && echo "hosts: files dns" > /etc/nsswitch.conf \
     && wget --progress=dot:giga https://github.com/djdembeck/m4b-merge/releases/download/v1.0.0/m4b-merge-linux -O /usr/local/bin/m4b-merge \
     && chmod +x /usr/local/bin/m4b-merge

@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"encoding/json"
-	"log"
 
 	"golang.org/x/net/websocket"
 )
@@ -14,12 +13,9 @@ func startOutboundBroadcastWorker() {
 			continue
 		}
 
-		rawMessageString := string(envelopeBytes)
-
 		clientMux.Lock()
 		for client := range clients {
-			log.Printf("Worker SENDING message: %s", rawMessageString)
-			if err := websocket.Message.Send(client, rawMessageString); err != nil {
+			if err := websocket.Message.Send(client, string(envelopeBytes)); err != nil {
 				client.Close()
 				delete(clients, client)
 			}

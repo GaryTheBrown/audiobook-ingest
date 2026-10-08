@@ -20,12 +20,12 @@ export class Header {
 
     constructor(itemID: string, newItem: CreateItem, header_DOM: HTMLElement) {
         this.itemID = itemID;
-        this.name = newItem.Title;
+        this.name = newItem.Name;
         this.addedAt = newItem.AddedAt;
         this.img_DOM = header_DOM.querySelector('img') as HTMLImageElement;
         this.img_DOM.src = newItem.Image;
         this.name_DOM = header_DOM.querySelector('h3') as HTMLElement;
-        this.name_DOM.innerText = newItem.Title;
+        this.name_DOM.innerText = newItem.Name;
         this.path_DOM = header_DOM.querySelector('h4') as HTMLElement;
         this.path_DOM.innerText = newItem.Path;
         this.tokenSpan_DOM = header_DOM.querySelector('span') as HTMLElement;

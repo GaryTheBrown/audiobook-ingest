@@ -6,7 +6,7 @@ export interface RecieveMessageEnvelope {
 }
 export interface CreateItem {
     readonly AddedAt: number,
-    readonly Title: string,
+    readonly Name: string,
     readonly Path: string,
     readonly Image: string,
     readonly Status: Status,
@@ -22,7 +22,7 @@ export interface AddMetadata {
     readonly KeyValues: Record<string, string>,
 }
 export interface ChangeStatus {
-    readonly ToStatus: Status,
+    readonly Status: Status,
 }
 export interface DetectingAddLogs {
     readonly Value: string,

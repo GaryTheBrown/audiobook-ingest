@@ -53,7 +53,7 @@ func (i *Item) SendBase() {
 	i.mu.RLock()
 	basePayload := structs.CreateItem{
 		AddedAt: i.addedAt,
-		Title:   i.name,
+		Name:    i.name,
 		Path:    i.path,
 		Image:   i.image,
 		Status:  i.status,
@@ -77,6 +77,8 @@ func (i *Item) FullPathName() string {
 }
 
 func (i *Item) Name() string {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
 	return i.name
 }
 
@@ -167,6 +169,7 @@ func (i *Item) SetTokenID(id string) {
 				ImgSrc:  imgSrc,
 				Data:    data,
 			}
+
 			SendMessage(i.id, enum.AcceptToken, acceptPayload)
 		}
 	}

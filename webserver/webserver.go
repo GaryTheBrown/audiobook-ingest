@@ -76,10 +76,11 @@ func Start() {
 		_, _ = w.Write(rawFaviconSVG)
 	})
 
+	websocket.Start()
+
 	if err := http.ListenAndServe(":"+config.Port, nil); err != nil {
 	}
 
-	websocket.Start()
 }
 
 func handleDashboard(w http.ResponseWriter, r *http.Request) {

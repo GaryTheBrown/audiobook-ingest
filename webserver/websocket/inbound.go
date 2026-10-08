@@ -9,7 +9,6 @@ import (
 	"audiobook-ingest/structs"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -94,7 +93,6 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 		case enum.Ping:
 			//DO NOTHING HAPPY TO STAY AWAKE
 		case enum.DetectingStuck:
-			log.Printf("DETECTINGSTUCK")
 			statusFunc := func(item *data.Item, targetStatus status.Ingest) {
 				if targetStatus != status.Detecting {
 					statusPayload := structs.ChangeStatus{
