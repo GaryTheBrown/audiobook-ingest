@@ -1,0 +1,15 @@
+{{define "verified.html"}}
+<section class="verified">
+    <h5>
+        <span style="color:#34d399; font-weight:bold; margin-right:4px;">✓</span>
+        Conversion successful & Verified.
+    </h5>
+    {{if .DisableAutoCommit}}
+    <footer>
+        <button type="button">🚀 Authorize</button>
+    </footer>
+    {{else}}
+    <h5>Waiting to be Moved to Library</h5>
+    {{end}}
+</section>
+{{end}}

@@ -1,0 +1,25 @@
+@use "../variables" as *;
+
+section.detecting {
+    ol {
+        padding-inline-start: 30px;
+        margin-block-start: 0;
+
+        li {
+            font-size: 0.85rem;
+            color: $text-main;
+            font-family: monospace;
+
+            &::marker {
+                content: var(--bullet-icon, "• ");
+                font-size: 1.1rem;
+                padding-right: 8px;
+                vertical-align: middle;
+            }
+
+            &:first-child::marker {
+                content: "🔄 ";
+            }
+        }
+    }
+}

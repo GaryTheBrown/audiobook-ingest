@@ -1,0 +1,80 @@
+@use "variables" as *;
+
+@use "sections/detecting";
+@use "sections/multichoice";
+@use "sections/manual";
+@use "sections/converting";
+@use "sections/verifying";
+@use "sections/verified";
+@use "sections/failed";
+@use "sections/apidown";
+
+article {
+    section {
+        display: none !important;
+    }
+
+    &[data-status="detecting"] {
+        section.detecting {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="multichoice"] {
+        section.multichoice {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="manual"] {
+        section.manual {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="converting"] {
+        section.converting {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="verifying"] {
+        section.verifying {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="verified"] {
+        section.verified {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="failed"] {
+        section.failed {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    &[data-status="apidown"] {
+        section.apidown {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+}

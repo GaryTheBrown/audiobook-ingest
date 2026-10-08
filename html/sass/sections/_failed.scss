@@ -1,0 +1,45 @@
+@use "../variables" as *;
+
+section.failed {
+    div {
+        font-size: 0.85rem;
+        color: $text-main;
+
+        strong {
+            display: block;
+            margin-bottom: 4px;
+            color: $accent-red;
+        }
+
+        p {
+            margin: 0;
+            font-family: monospace;
+            background: $main-theme-colour-badge-bg;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid $card-header-line;
+        }
+    }
+
+    footer {
+        button:first-child:not(:only-child) {
+            background: $button-muted-bg;
+            border-color: $button-muted-border;
+
+            &:hover {
+                background: $button-muted-hover-bg;
+                border-color: $button-muted-hover-border;
+            }
+        }
+
+        button:last-child:not(:only-child) {
+            background: $accent-red;
+            border-color: $card-header-line;
+
+            &:hover {
+                background: $button-danger-hover;
+                border-color: $accent-red;
+            }
+        }
+    }
+}

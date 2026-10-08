@@ -1,0 +1,15 @@
+@use "../variables" as *;
+
+section.verified {
+    footer {
+        button {
+            background: $main-theme-colour;
+            border-color: $main-theme-colour-hover;
+
+            &:hover {
+                background: $main-theme-colour-hover;
+                border-color: $main-theme-colour-active;
+            }
+        }
+    }
+}

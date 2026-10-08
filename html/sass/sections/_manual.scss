@@ -1,0 +1,83 @@
+@use "../variables" as *;
+
+section.manual {
+    div {
+        font-size: 0.85rem;
+        color: $text-muted;
+        margin-bottom: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        margin: 4px 0;
+
+        // FIXED: Splitting the text/asterisk row from the input block layout natively
+        label {
+            display: block; // Changed from flex to block layout flow context
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: $text-muted;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 4px;
+
+            span {
+                color: $accent-red;
+                font-weight: 700;
+                margin-left: 4px;
+                display: inline;
+            }
+
+            input {
+                display: block;
+                margin-top: 8px;
+                background: $main-theme-colour-badge-bg;
+                color: $text-highlight;
+                border: 1px solid $card-header-line;
+                border-radius: 4px;
+                padding: 10px 14px;
+                font-size: 0.95rem;
+                line-height: 1.4;
+
+                font-family: inherit;
+                width: 100%;
+                outline: none;
+                box-sizing: border-box;
+                transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+                &:focus {
+                    border-color: $input-focus-glow;
+                    box-shadow: 0 0 6px rgba(255, 144, 0, 0.15);
+                }
+
+                &::placeholder {
+                    color: #4e4e54;
+                    font-size: 0.88rem;
+                }
+            }
+        }
+    }
+
+    footer {
+        button:first-child:not(:only-child) {
+            background: $main-theme-colour;
+            border-color: $main-theme-colour-hover;
+
+            &:hover {
+                background: $main-theme-colour-hover;
+                border-color: $main-theme-colour-active;
+            }
+        }
+
+        button:last-child:not(:only-child) {
+            background: $button-muted-bg;
+            border-color: $button-muted-border;
+
+            &:hover {
+                background: $button-muted-hover-bg;
+                border-color: $button-muted-hover-border;
+            }
+        }
+    }
+}

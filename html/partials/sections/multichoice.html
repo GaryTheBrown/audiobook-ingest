@@ -1,0 +1,33 @@
+{{define "multichoice.html"}}
+<section class="multichoice" data-switchcount="{{.MultiSwitchCount}}" data-viewmode="manual">
+    <h5>Parked: Awaiting user selection</h5>
+    <h6>Database Matches Located: <strong>0</strong></h6>
+    <div class="select">
+        <details>
+            <summary>📖 Click to reveal list options...</summary>
+            <div></div>
+        </details>
+        <footer>
+            <button type="button" class="confirm" disabled>💾 Confirm</button>
+            <button type="button" class="manual">🔍 Manual Search</button>
+        </footer>
+    </div>
+    <div class="modal">
+        <footer>
+            <button type="button" class="modal" command="show-modal" commandfor>📋 Select</button>
+            <button type="button" class="manual">🔍 Manual Search</button>
+        </footer>
+        <dialog id>
+            <h2>Available Options</h2>
+            <form method="dialog"><button type="submit" aria-label="Close">X</button></form>
+            <table></table>
+            <div></div>
+        </dialog>
+    </div>
+    <div class="manual">
+        <footer>
+            <button type="button" class="manual">🔍 Manual Search</button>
+        </footer>
+    </div>
+</section>
+{{end}}

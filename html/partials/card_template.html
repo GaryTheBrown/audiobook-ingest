@@ -1,0 +1,29 @@
+{{define "card_template.html"}}
+<template id="card-template">
+    <article data-status="detecting">
+        <header>
+            <img src="/favicon.svg">
+            <span hidden>Token: <code></code></span>
+            <button class="tokensubmit" type="button">Submit</button>
+            <input type="text" name="token" placeholder="Paste Override ID...">
+            <h3>Title</h3>
+            <h4>Path</h4>
+            <h5>📅 Added:<code></code></h5>
+            <details>
+                <summary>View Metadata Tags</summary>
+                <dialog>
+                    <table></table>
+                </dialog>
+            </details>
+        </header>
+        {{template "detecting.html" .}}
+        {{template "multichoice.html" .}}
+        {{template "manual.html" .}}
+        {{template "converting.html" .}}
+        {{template "verifying.html" .}}
+        {{template "verified.html" .}}
+        {{template "failed.html" .}}
+        {{template "apidown.html" .}}
+    </article>
+</template>
+{{end}}

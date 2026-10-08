@@ -1,0 +1,16 @@
+{{define "manual.html"}}
+<section class="manual">
+    <h5>Parked: Awaiting manual search</h5>
+    <div>
+        {{range .ManualSearchFields}}
+        <label>{{.Label}}{{if .Required}}<span>*</span>{{end}}
+            <input type="text" name="{{.Key}}" placeholder="{{.Placeholder}}" {{if .Required}}required{{end}}>
+        </label>
+        {{end}}
+    </div>
+    <footer>
+        <button type="button">🔍 Search</button>
+        <button type="button">🔄 Re-Scan</button>
+    </footer>
+</section>
+{{end}}

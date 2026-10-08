@@ -1,0 +1,9 @@
+@use "../variables" as *;
+
+section.verifying {
+    div {
+        font-size: 0.85rem;
+        color: $text-muted;
+        font-family: monospace;
+    }
+}
