@@ -12,7 +12,7 @@ import (
 
 var (
 	SendMessage  func(itemID string, sendType enum.SendType, payloadObj any)
-	CheckTokenID func(tokenID string) (exists bool, name string, imgSrc string, data map[string]string)
+	CheckTokenID func(tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
 )
 
 type Item struct {
@@ -147,32 +147,42 @@ func (i *Item) TokenID() string {
 	defer i.mu.RUnlock()
 	return i.tokenID
 }
-
-func (i *Item) SetTokenID(id string) {
+func (i *Item) setTokenID(id string, isUserOverride bool) {
 	trimmedID := strings.TrimSpace(id)
 
 	exists, name, imgSrc, data := CheckTokenID(trimmedID)
-	if exists {
-
-		i.mu.Lock()
-		i.tokenID = trimmedID
-		i.name = name
-		i.foundImgSrc = imgSrc
-		i.foundMetadata = data
-		i.mu.Unlock()
-
-		if SendMessage != nil && trimmedID != "" {
-			acceptPayload := structs.AcceptToken{
-				Accept:  true,
-				TokenID: trimmedID,
-				Name:    name,
-				ImgSrc:  imgSrc,
-				Data:    data,
-			}
-
-			SendMessage(i.id, enum.AcceptToken, acceptPayload)
+	if !exists {
+		if isUserOverride {
+			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
 		}
+		return
 	}
+
+	i.mu.Lock()
+	i.tokenID = trimmedID
+	i.name = name
+	i.foundImgSrc = imgSrc
+	i.foundMetadata = data
+	i.mu.Unlock()
+
+	if SendMessage != nil && trimmedID != "" {
+		acceptPayload := structs.AcceptToken{
+			Accept:  true,
+			TokenID: trimmedID,
+			Name:    name,
+			ImgSrc:  imgSrc,
+			Data:    data,
+		}
+
+		SendMessage(i.id, enum.AcceptToken, acceptPayload)
+	}
+}
+func (i *Item) SetTokenIDManual(id string) {
+	i.setTokenID(id, true)
+}
+
+func (i *Item) SetTokenID(id string) {
+	i.setTokenID(id, false)
 }
 
 func (i *Item) FoundImgSrc() string {

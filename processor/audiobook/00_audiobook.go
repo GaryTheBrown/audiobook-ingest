@@ -60,7 +60,22 @@ func (ab *AudioBook) NewConversionState() any {
 	}
 }
 
-func (ab *AudioBook) CheckTokenID(tokenID string) (exists bool, name string, imgSrc string, data map[string]string) {
-	//TODO MAKE THIS WORK AND RETURN THE RIGHT DATA
-	return true, "TITLE", "/favicon.svg", map[string]string{"author": "Terry Pratchett"}
+func (ab *AudioBook) CheckTokenID(tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string) {
+	exists = false
+	name = ""
+	imgSrc = ""
+	metadata = map[string]string{}
+	if allData, err := ab.fetchBookDetailsByID(tokenID); err == nil {
+		for key, value := range allData {
+			switch key {
+			case "Title":
+				name = value
+			case "image":
+				imgSrc = value
+			default:
+				metadata[key] = value
+			}
+		}
+	}
+	return
 }

@@ -46,21 +46,17 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 		switch env.Type {
 		case enum.SubmitToken:
 			var payload structs.SubmitToken
-			if err := json.Unmarshal([]byte(env.Payload), &payload); err == nil {
-				tokenStr := strings.TrimSpace(payload.TokenID)
-				if tokenStr == "" {
-					denyResponse := structs.AcceptToken{Accept: false, TokenID: ""}
-					SendMessage(item.ID(), enum.AcceptToken, denyResponse)
-					return
-				}
-				item.SetTokenID(tokenStr)
-				acceptResponse := structs.AcceptToken{Accept: true, TokenID: tokenStr}
-				SendMessage(item.ID(), enum.AcceptToken, acceptResponse)
-				item.SetStatus(status.Converting)
-			} else {
+			if err := json.Unmarshal([]byte(env.Payload), &payload); err != nil {
 				denyResponse := structs.AcceptToken{Accept: false, TokenID: ""}
 				SendMessage(item.ID(), enum.AcceptToken, denyResponse)
 			}
+			tokenStr := strings.TrimSpace(payload.TokenID)
+			if tokenStr == "" {
+				denyResponse := structs.AcceptToken{Accept: false}
+				SendMessage(item.ID(), enum.AcceptToken, denyResponse)
+				return
+			}
+			item.SetTokenIDManual(tokenStr)
 		case enum.FailedDelete:
 			purgeItemDiskAssets(item)
 			data.Store.Remove(env.ItemID)

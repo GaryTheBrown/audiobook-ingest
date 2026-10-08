@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (ab *AudioBook) FetchBookDetailsByID(token string) (map[string]string, error) {
+func (ab *AudioBook) fetchBookDetailsByID(token string) (map[string]string, error) {
 	if token == "" {
 		return nil, fmt.Errorf("cannot resolve details for an empty metadata token string")
 	}

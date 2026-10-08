@@ -100,7 +100,6 @@ export class WSocket {
         [RecieveMessageType.CreateItem]: (itemID: string, payload: string): void => {
             const itemData = JSON.parse(payload) as CreateItem;
             if (this.cardRegistry.has(itemID)) {
-                console.error(`[SOCKET] Card ID ${itemID} already active on dashboard. Diverting to status update.`);
                 const existingItem = this.cardRegistry.get(itemID);
                 if (existingItem) {
                     existingItem.Status = itemData.Status;
