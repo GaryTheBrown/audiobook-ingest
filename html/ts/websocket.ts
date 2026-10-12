@@ -1,5 +1,5 @@
 import { RecieveMessageType, SendMessageType } from "./enums";
-import { AcceptToken, AddChoices, ChangeStatus, CreateItem, DetectingAddLogs, RecieveMessageEnvelope } from "./messages/recieve";
+import { AcceptToken, AddChoices, ChangeStatus, ConversionProgress, CreateItem, DetectingAddLogs, RecieveMessageEnvelope } from "./messages/recieve";
 import { SendMessageEnvelope } from "./messages/send";
 import { CardTemplate } from "./modules/card_template";
 import { ChoiceTemplate } from "./modules/choice_template";
@@ -224,6 +224,13 @@ export class WSocket {
         [RecieveMessageType.RemoveChoices]: (itemID: string, payload: string): void => {
             let item = this.cardRegistry.get(itemID) as CardTemplate;
             if (item) item.SectionMultichoice.RemoveChoices();
+        },
+        [RecieveMessageType.ConversionProgress]: (itemID: string, payload: string): void => {
+            let item = this.cardRegistry.get(itemID) as CardTemplate;
+            if (item) {
+                const data = JSON.parse(payload) as ConversionProgress;
+                item.SectionConverting.SetProgress(data.Percent, data.Text);
+            }
         },
     };
 }

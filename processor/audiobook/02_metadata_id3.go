@@ -125,7 +125,7 @@ func (ab *AudioBook) checkID3Tags(item *data.Item) (foundID bool, foundMeta bool
 		}
 	}
 
-	item.AddMetadata(tagMap)
+	item.AddSearchMetadata(tagMap)
 
 	asinRegex := regexp.MustCompile(`\bB[A-Z0-9]{9}\b`)
 	for _, key := range []string{"Comment", "Title", "Album"} {

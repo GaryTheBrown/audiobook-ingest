@@ -36,3 +36,8 @@ export interface Choice {
 export interface AddChoices {
     readonly Choices: Choice[],
 }
+
+export interface ConversionProgress {
+    readonly Percent: number;
+    readonly Text: string;
+}

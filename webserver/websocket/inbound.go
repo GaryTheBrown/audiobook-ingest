@@ -102,8 +102,8 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 					Accept:  true,
 					TokenID: tokenID,
 					Name:    item.Name(),
-					ImgSrc:  item.FoundImgSrc(),
-					Data:    item.FoundMetadata(),
+					ImgSrc:  item.FinalCoverImage(),
+					Data:    item.FinalMetadata().ToMap(),
 				}
 				_ = sendNumericalEnvelope(ws, item.ID(), enum.AcceptToken, acceptPayload)
 			}

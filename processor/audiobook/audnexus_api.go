@@ -7,24 +7,26 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 )
 
-func (ab *AudioBook) fetchBookDetailsByID(item *data.Item, token string) (map[string]string, error) {
-	if token == "" {
-		return nil, fmt.Errorf("cannot resolve details for an empty metadata token string")
-	}
+const (
+	base string = "https://api.audnex.us"
+)
 
-	baseLinkString := "https://api.audnex.us/books/"
-	cleanBaseURL := strings.ReplaceAll(baseLinkString, " ", "")
+func booksURL(token string) string {
+	return fmt.Sprintf("%s/books/%s?region=uk", base, url.PathEscape(strings.TrimSpace(token)))
+}
 
-	fullTargetURL := cleanBaseURL + url.PathEscape(strings.TrimSpace(token))
+func chaptersURL(token string) string {
+	return fmt.Sprintf("%s/books/%s/chapters?region=uk", base, url.PathEscape(strings.TrimSpace(token)))
+}
 
-	req, err := http.NewRequest("GET", fullTargetURL, nil)
+func apiCall(url string, inStruct any) error {
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	req.Header.Set("User-Agent", "AudiobookIngestStationPipeline/1.0.0")
 	req.Header.Set("Accept", "application/json")
@@ -32,56 +34,37 @@ func (ab *AudioBook) fetchBookDetailsByID(item *data.Item, token string) (map[st
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("external asset index server returned non-200 status code: %d", resp.StatusCode)
+		return fmt.Errorf("external asset index server returned non-200 status code: %d", resp.StatusCode)
 	}
 
-	var res structs.AudiobookAudNexusReturn
-
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return nil, err
+	if err := json.NewDecoder(resp.Body).Decode(inStruct); err != nil {
+		return err
 	}
+	return nil
+}
 
-	var tagRegexp = regexp.MustCompile(`<[^>]*>`)
-	item.SetFinalMetadata(res)
-	res.Summary = tagRegexp.ReplaceAllString(res.Summary, "")
-	choice := map[string]string{
-		"Copyright":        fmt.Sprintf("%d", res.Copyright),
-		"Description":      res.Description,
-		"FormatType":       res.FormatType,
-		"Image":            res.Image,
-		"IsAdult":          fmt.Sprintf("%t", res.IsAdult),
-		"ISBN":             res.ISBN,
-		"Language":         res.Language,
-		"LiteratureType":   res.LiteratureType,
-		"PublisherName":    res.PublisherName,
-		"Rating":           res.Rating,
-		"Region":           res.Region,
-		"ReleaseDate":      res.ReleaseDate,
-		"RuntimeLengthMin": fmt.Sprintf("%d", res.RuntimeLengthMin),
-		"Summary":          res.Summary,
-		"Title":            res.Title,
+func (ab *AudioBook) fetchBookDetailsByID(item *data.Item, token string) error {
+	if token == "" {
+		return fmt.Errorf("cannot resolve details for an empty metadata token string")
 	}
 
-	var tmpAuthors []string
-	for _, v := range res.Authors {
-		tmpAuthors = append(tmpAuthors, v.Name)
+	var audiobook structs.AudnexusApiBookResponse
+	if err := apiCall(booksURL(token), &audiobook); err != nil {
+		return err
 	}
-	choice["Authors"] = strings.Join(tmpAuthors, ",")
-	var tmpGenres []string
-	for _, v := range res.Genres {
-		tmpGenres = append(tmpGenres, v.Name)
-	}
-	choice["Genres"] = strings.Join(tmpGenres, ",")
-	var tmpNarrators []string
-	for _, v := range res.Narrators {
-		tmpNarrators = append(tmpNarrators, v.Name)
-	}
-	choice["Narrators"] = strings.Join(tmpNarrators, ",")
 
-	return choice, nil
+	var chaptersReturn structs.AudnexusApiChapterResponse
+	if err := apiCall(chaptersURL(token), &chaptersReturn); err != nil {
+		//DO nothing here
+	}
+	audiobook.Chapters = chaptersReturn.Chapters
+	item.SetName(audiobook.Title)
+	item.SetFinalCoverImage(audiobook.Image)
+	item.SetFinalMetadata(audiobook.ConvertToAudioBookMetadata())
+	return nil
 }

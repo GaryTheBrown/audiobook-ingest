@@ -90,7 +90,7 @@ func (ab *AudioBook) checkNameParsing(item *data.Item) (foundID bool, foundMeta 
 		tagMap["Folder Path"] = item.Path()
 	}
 
-	item.AddMetadata(tagMap)
+	item.AddSearchMetadata(tagMap)
 	item.SetStatus(status.MultiChoice)
 
 	foundMeta = true

@@ -12,7 +12,7 @@ import (
 
 var (
 	SendMessage  func(itemID string, sendType enum.SendType, payloadObj any)
-	CheckTokenID func(item *Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string)
+	CheckTokenID func(item *Item, tokenID string) error
 )
 
 type Item struct {
@@ -26,14 +26,13 @@ type Item struct {
 	requiredConversion bool
 	status             status.Ingest
 
-	tokenID       string
-	foundImgSrc   string
-	foundMetadata map[string]string
-	metadata      map[string]string
-	detectingLog  []structs.DetectingLogs
-	choices       []structs.Choice
+	searchMetadata map[string]string
+	detectingLog   []structs.DetectingLogs
+	choices        []structs.Choice
 
-	finalMetadata any
+	tokenID         string
+	finalCoverImage string
+	finalMetadata   MetadataInterface
 }
 
 func NewItem(fullPath, name, path string, reqConversion bool) *Item {
@@ -45,9 +44,6 @@ func NewItem(fullPath, name, path string, reqConversion bool) *Item {
 		path:               path,
 		requiredConversion: reqConversion,
 		status:             status.Detecting,
-		metadata:           map[string]string{},
-		detectingLog:       []structs.DetectingLogs{},
-		choices:            []structs.Choice{},
 	}
 }
 
@@ -76,6 +72,12 @@ func (i *Item) AddedAt() int64 {
 
 func (i *Item) FullPathName() string {
 	return i.fullPathName
+}
+
+func (i *Item) SetName(name string) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	i.name = name
 }
 
 func (i *Item) Name() string {
@@ -152,28 +154,20 @@ func (i *Item) TokenID() string {
 func (i *Item) setTokenID(id string, isUserOverride bool) bool {
 	trimmedID := strings.TrimSpace(id)
 
-	exists, name, imgSrc, metadata := CheckTokenID(i, trimmedID)
-	if !exists {
+	if CheckTokenID(i, trimmedID) != nil {
 		if isUserOverride {
 			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
 		}
 		return false
 	}
 
-	i.mu.Lock()
-	i.tokenID = trimmedID
-	i.name = name
-	i.foundImgSrc = imgSrc
-	i.foundMetadata = metadata
-	i.mu.Unlock()
-
 	if SendMessage != nil {
 		acceptPayload := structs.AcceptToken{
 			Accept:  true,
 			TokenID: trimmedID,
-			Name:    name,
-			ImgSrc:  imgSrc,
-			Data:    metadata,
+			Name:    i.Name(),
+			ImgSrc:  i.FinalCoverImage(),
+			Data:    i.finalMetadata.ToMap(),
 		}
 
 		SendMessage(i.id, enum.AcceptToken, acceptPayload)
@@ -189,20 +183,9 @@ func (i *Item) SetTokenID(id string) bool {
 	return i.setTokenID(id, false)
 }
 
-func (i *Item) FoundImgSrc() string {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	return i.foundImgSrc
-}
-func (i *Item) FoundMetadata() map[string]string {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	return i.foundMetadata
-}
-
-func (i *Item) AddMetadata(metadata map[string]string) {
+func (i *Item) AddSearchMetadata(metadata map[string]string) {
 	i.mu.Lock()
-	i.metadata = metadata
+	i.searchMetadata = metadata
 	i.mu.Unlock()
 	if len(metadata) > 0 {
 		payload := structs.AddMetadata{
@@ -214,9 +197,9 @@ func (i *Item) AddMetadata(metadata map[string]string) {
 	}
 }
 
-func (i *Item) RemoveMetadata() {
+func (i *Item) RemoveSearchMetadata() {
 	i.mu.Lock()
-	i.metadata = map[string]string{}
+	i.searchMetadata = map[string]string{}
 	i.mu.Unlock()
 
 	if SendMessage != nil {
@@ -227,7 +210,7 @@ func (i *Item) RemoveMetadata() {
 func (i *Item) Metadata() map[string]string {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
-	return i.metadata
+	return i.searchMetadata
 }
 
 func (i *Item) SetChoices(choices []structs.Choice) {
@@ -289,13 +272,24 @@ func (i *Item) DetectingLogs() []structs.DetectingLogs {
 	return i.detectingLog
 }
 
-func (i *Item) FinalMetadata() any {
+func (i *Item) SetFinalCoverImage(imgsrc string) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	i.finalCoverImage = imgsrc
+}
+func (i *Item) FinalCoverImage() string {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	return i.finalCoverImage
+}
+
+func (i *Item) FinalMetadata() MetadataInterface {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	return i.finalMetadata
 }
 
-func (i *Item) SetFinalMetadata(data any) {
+func (i *Item) SetFinalMetadata(data MetadataInterface) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.finalMetadata = data

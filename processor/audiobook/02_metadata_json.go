@@ -57,7 +57,7 @@ func (ab *AudioBook) checkMetadataJson(item *data.Item) (foundID bool, foundMeta
 
 	flattenedResult := make(map[string]string)
 	matchedASIN := flattenAndScanForASIN(rawMetadata, flattenedResult, "")
-	item.AddMetadata(flattenedResult)
+	item.AddSearchMetadata(flattenedResult)
 
 	tagMap := SortJson(rawMetadata)
 	if matchedASIN == "" {

@@ -55,27 +55,6 @@ func (ab *AudioBook) GetManualSearchFields() []structs.ManualSearchField {
 	}
 }
 
-func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) (exists bool, name string, imgSrc string, metadata map[string]string) {
-	exists = false
-	name = ""
-	imgSrc = ""
-	metadata = map[string]string{}
-	if allData, err := ab.fetchBookDetailsByID(item, tokenID); err == nil {
-		exists = true
-		for key, value := range allData {
-			switch key {
-			case "Title":
-				name = value
-			case "Image":
-				imgSrc = value
-			default:
-				metadata[key] = value
-			}
-		}
-	}
-	return
-}
-
-func (ab *AudioBook) Convert(item *data.Item) error {
-	return nil
+func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) error {
+	return ab.fetchBookDetailsByID(item, tokenID)
 }

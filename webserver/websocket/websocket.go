@@ -43,7 +43,7 @@ func AddWebsocket(ws *websocket.Conn) {
 				Accept:  true,
 				TokenID: item.TokenID(),
 				Name:    item.Name(),
-				ImgSrc:  item.FoundImgSrc(),
+				ImgSrc:  item.FinalCoverImage(),
 				Data:    map[string]string{},
 			}
 			_ = sendNumericalEnvelope(ws, item.ID(), enum.AcceptToken, acceptPayload)

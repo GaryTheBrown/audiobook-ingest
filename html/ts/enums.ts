@@ -37,6 +37,7 @@ export const enum RecieveMessageType {
     DetectingRemoveLogs,
     AddChoices,
     RemoveChoices,
+    ConversionProgress,
 }
 
 export const enum SendMessageType {

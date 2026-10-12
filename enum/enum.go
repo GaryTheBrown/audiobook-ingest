@@ -13,6 +13,7 @@ const (
 	DetectingRemoveLogs
 	AddChoices
 	RemoveChoices
+	ConversionProgress
 )
 
 type RecievedType int

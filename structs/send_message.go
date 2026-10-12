@@ -48,3 +48,8 @@ type Choice struct {
 type AddChoices struct {
 	Choices []Choice `json:"Choices"`
 }
+
+type ConversionProgressMessage struct {
+	Percent float64 `json:"Percent"`
+	Text    string  `json:"Text"`
+}
