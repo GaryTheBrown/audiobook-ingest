@@ -1,6 +1,7 @@
 package main
 
 import (
+	"audiobook-ingest/converter"
 	"audiobook-ingest/folder"
 	"audiobook-ingest/metadata"
 	"audiobook-ingest/webserver"
@@ -12,8 +13,8 @@ func main() {
 	webserver.InitTemplates(HTMLFilesystem)
 	metadataDetector := metadata.NewDetector()
 	metadataDetector.StartWorker()
-	// converterEngine := converter.NewEngine()
-	// converterEngine.StartWorker()
+	converterEngine := converter.NewEngine()
+	converterEngine.StartWorker()
 	folder.ScanDirectoryRecursive()
 	go folder.StartWatcher()
 	webserver.Start()

@@ -2,6 +2,9 @@ package converter
 
 import (
 	"audiobook-ingest/config"
+	"audiobook-ingest/data"
+	"audiobook-ingest/processor"
+	"audiobook-ingest/status"
 )
 
 type Engine struct{}
@@ -17,6 +20,15 @@ func (e *Engine) StartWorker() {
 }
 
 func (e *Engine) workerLoop() {
-	// for id := range data.ConversionQueue {
-	// }
+	for id := range data.ConversionQueue {
+		item, exists := data.Store.GetItem(id)
+		if !exists {
+			continue
+		}
+
+		if err := processor.Process.Convert(item); err != nil {
+			item.SetStatus(status.Failed)
+			continue
+		}
+	}
 }

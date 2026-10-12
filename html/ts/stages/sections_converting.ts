@@ -27,8 +27,9 @@ export class SectionConverting {
     }
 
     public SetProgress(percent: number, text: string): void {
-        this.progressBar_DOM.dataset.label = `${percent.toFixed(1)}%`;
-        this.progressBarSpan_DOM.style.width = `${percent.toFixed(1)}%`;
+        const percentageString = `${percent.toFixed(0)}%`;
+        this.progressBar_DOM.setAttribute('data-label', percentageString);
+        this.progressBarSpan_DOM.style.width = percentageString;
         this.progressInfo_DOM.innerText = text;
     }
 }
