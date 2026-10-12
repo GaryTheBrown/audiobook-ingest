@@ -14,6 +14,7 @@ const (
 	AddChoices
 	RemoveChoices
 	ConversionProgress
+	FailedMessage
 )
 
 type RecievedType int

@@ -41,3 +41,7 @@ export interface ConversionProgress {
     readonly Percent: number;
     readonly Text: string;
 }
+
+export interface FailedMessage {
+    readonly Message: string;
+}

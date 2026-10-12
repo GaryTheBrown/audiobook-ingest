@@ -27,6 +27,7 @@ func (e *Engine) workerLoop() {
 		}
 
 		if err := processor.Process.Convert(item); err != nil {
+			item.SetErrorMessage(err)
 			item.SetStatus(status.Failed)
 			continue
 		}

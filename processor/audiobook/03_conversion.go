@@ -29,7 +29,6 @@ func (ab *AudioBook) Convert(item *data.Item) error {
 	_, err := conversion.ExecuteAudioMerge(bookFolder, intermediateMergeM4B, mergeProgressCallback)
 	if err != nil {
 		_ = os.Remove(intermediateMergeM4B)
-		item.SetStatus(status.Failed)
 		return fmt.Errorf("audio merge track compilation failed: %w", err)
 	}
 
@@ -48,12 +47,10 @@ func (ab *AudioBook) Convert(item *data.Item) error {
 	_ = os.Remove(intermediateMergeM4B)
 
 	if err != nil {
-		item.SetStatus(status.Failed)
 		return fmt.Errorf("container asset metadata injection failed: %w", err)
 	}
 
 	if _, err := os.Stat(finalM4BPath); os.IsNotExist(err) {
-		item.SetStatus(status.Failed)
 		return fmt.Errorf("compiled target file missing from output path: %s", finalM4BPath)
 	}
 

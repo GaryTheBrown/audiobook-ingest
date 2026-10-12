@@ -33,6 +33,8 @@ type Item struct {
 	tokenID         string
 	finalCoverImage string
 	finalMetadata   MetadataInterface
+
+	errorMessage error
 }
 
 func NewItem(fullPath, name, path string, reqConversion bool) *Item {
@@ -293,4 +295,34 @@ func (i *Item) SetFinalMetadata(data MetadataInterface) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.finalMetadata = data
+}
+
+func (i *Item) SetErrorMessage(errorMessage error) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	i.errorMessage = errorMessage
+	if SendMessage != nil {
+		failedMessage := structs.FailedMessage{
+			Message: errorMessage.Error(),
+		}
+		SendMessage(i.id, enum.FailedMessage, failedMessage)
+	}
+}
+
+func (i *Item) ErrorMessage() error {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	return i.errorMessage
+}
+
+func (i *Item) ClearErrorMessage() {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	i.errorMessage = nil
+	if SendMessage != nil {
+		failedMessage := structs.FailedMessage{
+			Message: "",
+		}
+		SendMessage(i.id, enum.FailedMessage, failedMessage)
+	}
 }

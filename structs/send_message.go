@@ -53,3 +53,7 @@ type ConversionProgressMessage struct {
 	Percent float64 `json:"Percent"`
 	Text    string  `json:"Text"`
 }
+
+type FailedMessage struct {
+	Message string `json:"Message"`
+}

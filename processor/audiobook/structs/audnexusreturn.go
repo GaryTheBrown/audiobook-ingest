@@ -67,6 +67,14 @@ type AudioBookMetadata struct {
 	Year           uint32
 }
 
+func (abm *AudioBookMetadata) ExpectedDuration() time.Duration {
+	var totalMs uint64 = 0
+	for _, ch := range abm.Chapters {
+		totalMs += ch.LengthMs
+	}
+	return time.Duration(totalMs) * time.Millisecond
+}
+
 func (r *AudnexusApiBookResponse) ConvertToAudioBookMetadata() *AudioBookMetadata {
 	authors := make([]string, len(r.Authors))
 	for i, author := range r.Authors {

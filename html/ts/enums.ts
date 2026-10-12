@@ -38,6 +38,7 @@ export const enum RecieveMessageType {
     AddChoices,
     RemoveChoices,
     ConversionProgress,
+    FailedMessage,
 }
 
 export const enum SendMessageType {

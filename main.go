@@ -4,6 +4,7 @@ import (
 	"audiobook-ingest/converter"
 	"audiobook-ingest/folder"
 	"audiobook-ingest/metadata"
+	"audiobook-ingest/verifier"
 	"audiobook-ingest/webserver"
 	"log"
 )
@@ -15,6 +16,8 @@ func main() {
 	metadataDetector.StartWorker()
 	converterEngine := converter.NewEngine()
 	converterEngine.StartWorker()
+	verifierEngine := verifier.NewEngine()
+	verifierEngine.StartWorker()
 	folder.ScanDirectoryRecursive()
 	go folder.StartWatcher()
 	webserver.Start()

@@ -17,4 +17,5 @@ type Interface interface {
 	ExecuteManualSearch(item *data.Item, criteria map[string]string)
 	CheckTokenID(item *data.Item, tokenID string) error
 	Convert(item *data.Item) error
+	Verify(item *data.Item) error
 }
