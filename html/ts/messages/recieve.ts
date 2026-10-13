@@ -14,8 +14,6 @@ export interface CreateItem {
 export interface AcceptToken {
     readonly Accept: boolean,
     readonly TokenID: string,
-    readonly Name: string,
-    readonly ImgSrc: string,
     readonly Data: Record<string, string>,
 }
 export interface AddMetadata {

@@ -3,8 +3,11 @@ package metadata
 import (
 	"audiobook-ingest/config"
 	"audiobook-ingest/data"
+	"audiobook-ingest/enum"
 	"audiobook-ingest/processor"
 	"audiobook-ingest/status"
+	"audiobook-ingest/structs"
+	"audiobook-ingest/webserver/websocket"
 	"path/filepath"
 )
 
@@ -35,7 +38,12 @@ func (d *Detector) ProcessQueueItem(itemID string) {
 	}
 	targetExt := processor.Process.FinalExt()
 	if item.RequiredConversion() && filepath.Ext(item.FullPathName()) == targetExt {
-		item.AddDetactingLog("⚠", "[SAFETY CATCH] Correcting conversion flag mismatch")
+		payload := structs.DetectingLogs{
+			Icon:  "⚠",
+			Value: "[SAFETY CATCH] Correcting conversion flag mismatch",
+		}
+		item.AddDetactingLog(payload)
+		websocket.SendMessage(item.ID(), enum.DetectingAddLog, payload)
 		item.SetRequiredConversion(false)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"audiobook-ingest/config"
 	"audiobook-ingest/data"
 	"audiobook-ingest/enum"
+	"audiobook-ingest/helpers"
 	"audiobook-ingest/processor"
 	"audiobook-ingest/status"
 	"audiobook-ingest/structs"
@@ -56,30 +57,31 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 				SendMessage(item.ID(), enum.AcceptToken, denyResponse)
 				return
 			}
-			item.SetTokenIDManual(tokenStr)
+			processor.Process.SetTokenID(item, tokenStr, true)
 		case enum.FailedDelete:
 			purgeItemDiskAssets(item)
 			data.Store.Remove(env.ItemID)
+			SendMessage(item.ID(), enum.RemoveItem, nil)
 		case enum.FailedRetry:
-			item.RemoveDetactingLogs()
-			item.SetStatus(status.Detecting)
+			helpers.RemoveDetactingLogs(item)
+			helpers.SetStatus(item, status.Detecting)
 		case enum.SwitchToManual:
-			item.SetStatus(status.Manual)
+			helpers.SetStatus(item, status.Manual)
 		case enum.SelectChoice:
 			var payload structs.SelectChoice
 			if err := json.Unmarshal([]byte(env.Payload), &payload); err == nil {
-				item.SetTokenID(payload.Choice)
+				processor.Process.SetTokenID(item, payload.Choice, false)
 			}
 		case enum.ManualSearch:
 			var criteria map[string]string
 			if err := json.Unmarshal([]byte(env.Payload), &criteria); err == nil {
 				go processor.Process.ExecuteManualSearch(item, criteria)
 			} else {
-				item.SetStatus(status.Manual)
+				helpers.SetStatus(item, status.Manual)
 			}
 		case enum.Rescan:
-			item.RemoveDetactingLogs()
-			item.SetStatus(status.Detecting)
+			helpers.RemoveDetactingLogs(item)
+			helpers.SetStatus(item, status.Detecting)
 		default:
 			panic(fmt.Sprintf("unexpected enum.RecievedType: %#v", env.Type))
 		}
@@ -101,8 +103,6 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 				acceptPayload := structs.AcceptToken{
 					Accept:  true,
 					TokenID: tokenID,
-					Name:    item.Name(),
-					ImgSrc:  item.FinalCoverImage(),
 					Data:    item.FinalMetadata().ToMap(),
 				}
 				_ = sendNumericalEnvelope(ws, item.ID(), enum.AcceptToken, acceptPayload)
@@ -116,7 +116,7 @@ func handleInboundWebSocketAction(ws *websocket.Conn, env structs.RecievedMessag
 			}
 
 			choicesFunc := func(item *data.Item) bool {
-				choices := item.Choices()
+				choices := item.ChoicesFront()
 				if len(choices) > 0 {
 					choicesPayload := structs.AddChoices{Choices: choices}
 					_ = sendNumericalEnvelope(ws, item.ID(), enum.AddChoices, choicesPayload)

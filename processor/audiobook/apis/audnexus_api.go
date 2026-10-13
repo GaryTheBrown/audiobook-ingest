@@ -1,7 +1,6 @@
-package audiobook
+package apis
 
 import (
-	"audiobook-ingest/data"
 	"audiobook-ingest/processor/audiobook/structs"
 	"encoding/json"
 	"fmt"
@@ -48,23 +47,19 @@ func apiCall(url string, inStruct any) error {
 	return nil
 }
 
-func (ab *AudioBook) fetchBookDetailsByID(item *data.Item, token string) error {
-	if token == "" {
-		return fmt.Errorf("cannot resolve details for an empty metadata token string")
+func FetchBookDetailsByID(tokenID string) (*structs.AudioBookMetadata, error) {
+	if tokenID == "" {
+		return nil, fmt.Errorf("cannot resolve details for an empty metadata token string")
 	}
 
 	var audiobook structs.AudnexusApiBookResponse
-	if err := apiCall(booksURL(token), &audiobook); err != nil {
-		return err
+	if err := apiCall(booksURL(tokenID), &audiobook); err != nil {
+		return nil, err
 	}
 
 	var chaptersReturn structs.AudnexusApiChapterResponse
-	if err := apiCall(chaptersURL(token), &chaptersReturn); err != nil {
-		//DO nothing here
-	}
+	apiCall(chaptersURL(tokenID), &chaptersReturn)
 	audiobook.Chapters = chaptersReturn.Chapters
-	item.SetName(audiobook.Title)
-	item.SetFinalCoverImage(audiobook.Image)
-	item.SetFinalMetadata(audiobook.ConvertToAudioBookMetadata())
-	return nil
+
+	return audiobook.ConvertToAudioBookMetadata(), nil
 }

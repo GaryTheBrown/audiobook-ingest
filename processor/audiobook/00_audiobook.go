@@ -2,24 +2,16 @@ package audiobook
 
 import (
 	"audiobook-ingest/data"
+	"audiobook-ingest/enum"
+	"audiobook-ingest/processor/audiobook/apis"
+	"audiobook-ingest/status"
 	"audiobook-ingest/structs"
-	"os"
 	"strings"
 )
 
 var (
-	AUDIOBOOKSHELF_URL     string
-	AUDIOBOOKSHELF_API_KEY string
-
-	apiSearchEnabled bool
+	SendMessage func(itemID string, sendType enum.SendType, payloadObj any)
 )
-
-func init() {
-	AUDIOBOOKSHELF_URL = strings.TrimSuffix(os.Getenv("AUDIOBOOKSHELF_URL"), "/")
-	AUDIOBOOKSHELF_API_KEY = os.Getenv("AUDIOBOOKSHELF_API_KEY")
-
-	apiSearchEnabled = AUDIOBOOKSHELF_URL != "" && AUDIOBOOKSHELF_API_KEY != ""
-}
 
 type AudioBook struct{}
 
@@ -32,20 +24,15 @@ func (ab *AudioBook) IDLabel() string {
 }
 
 func (ab *AudioBook) APISearchEnabled() bool {
-	return apiSearchEnabled
+	return true
 }
 
 func (ab *AudioBook) EnvKeyNames() []string {
-	return []string{
-		"AUDIOBOOKSHELF_URL",
-		"AUDIOBOOKSHELF_API_KEY",
-	}
+	return []string{}
 }
 
 func (ab *AudioBook) EnvInstructions() []string {
-	return []string{
-		"To search manually for an Audible ASIN ID, open audible.co.uk in your browser, search for the book, and copy the 10-digit alphanumeric token starting with 'B' from the product URL path string.",
-	}
+	return []string{}
 }
 
 func (ab *AudioBook) GetManualSearchFields() []structs.ManualSearchField {
@@ -55,6 +42,31 @@ func (ab *AudioBook) GetManualSearchFields() []structs.ManualSearchField {
 	}
 }
 
-func (ab *AudioBook) CheckTokenID(item *data.Item, tokenID string) error {
-	return ab.fetchBookDetailsByID(item, tokenID)
+func (ab *AudioBook) SetTokenID(item *data.Item, tokenID string, isUserOverride bool) bool {
+	trimmedID := strings.TrimSpace(tokenID)
+
+	//TODO CHECK THE LIST IN CHOICES AND IF ANY MATCH THEN USE THATS DATA SINCE IT@S ALL FROM THE SAME API
+
+	metadata, err := apis.FetchBookDetailsByID(trimmedID)
+	if err != nil {
+		if isUserOverride {
+			SendMessage(item.ID(), enum.AcceptToken, structs.AcceptToken{Accept: false})
+		}
+		return false
+	}
+
+	item.SetFinalMetadata(metadata)
+	item.SetTokenID(tokenID)
+
+	if SendMessage != nil {
+		acceptPayload := structs.AcceptToken{
+			Accept:  true,
+			TokenID: trimmedID,
+			Data:    item.FinalMetadata().ToMap(),
+		}
+
+		SendMessage(item.ID(), enum.AcceptToken, acceptPayload)
+	}
+	item.SetStatus(status.Converting)
+	return true
 }

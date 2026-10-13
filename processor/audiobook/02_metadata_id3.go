@@ -43,7 +43,7 @@ func (ab *AudioBook) checkID3Tags(item *data.Item) (foundID bool, foundMeta bool
 
 	f, err := os.Open(targetFile)
 	if err != nil {
-		item.AddDetactingLog("⚠️", fmt.Sprintf("Failed to open audio track for tag parsing: %s", filepath.Base(targetFile)))
+		addDetactingLog(item, "⚠️", fmt.Sprintf("Failed to open audio track for tag parsing: %s", filepath.Base(targetFile)))
 		f.Close()
 		return
 	}
@@ -51,11 +51,11 @@ func (ab *AudioBook) checkID3Tags(item *data.Item) (foundID bool, foundMeta bool
 	m, err := tag.ReadFrom(f)
 	f.Close()
 	if err != nil {
-		item.AddDetactingLog("ℹ", "No embedded ID3/MP4 metadata header tags located inside audio tracks.")
+		addDetactingLog(item, "ℹ", "No embedded ID3/MP4 metadata header tags located inside audio tracks.")
 		return
 	}
 
-	item.AddDetactingLog("🎵", fmt.Sprintf("Inspecting embedded embedded tags inside track: %s", filepath.Base(targetFile)))
+	addDetactingLog(item, "🎵", fmt.Sprintf("Inspecting embedded embedded tags inside track: %s", filepath.Base(targetFile)))
 
 	tagMap := make(map[string]string)
 
@@ -131,15 +131,15 @@ func (ab *AudioBook) checkID3Tags(item *data.Item) (foundID bool, foundMeta bool
 	for _, key := range []string{"Comment", "Title", "Album"} {
 		if field, exists := tagMap[key]; exists {
 			if matched := asinRegex.FindString(strings.ToUpper(field)); matched != "" {
-				item.AddDetactingLog("🎯", fmt.Sprintf("Audible ASIN match isolated inside embedded audio tag '%s': %s", key, matched))
-				foundID = item.SetTokenID(matched)
+				addDetactingLog(item, "🎯", fmt.Sprintf("Audible ASIN match isolated inside embedded audio tag '%s': %s", key, matched))
+				foundID = ab.SetTokenID(item, matched, false)
 				return
 			}
 		}
 	}
 
 	if tagMap["Title"] != "" {
-		item.AddDetactingLog("✔", fmt.Sprintf("Extracted embedded tags -> Title: '%s' | Artist: '%s'", tagMap["Title"], tagMap["Author"]))
+		addDetactingLog(item, "✔", fmt.Sprintf("Extracted embedded tags -> Title: '%s' | Artist: '%s'", tagMap["Title"], tagMap["Author"]))
 	}
 	foundMeta = true
 	return

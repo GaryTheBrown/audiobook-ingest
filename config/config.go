@@ -7,13 +7,12 @@ import (
 )
 
 var (
-	ImportDirs        []string
-	ExportDir         string
-	Port              string
-	NoDelete          bool
-	HideAPIWarning    bool
-	DisableAutoIngest bool
-	MultiSwitchCount  int
+	ImportDirs       []string
+	ExportDir        string
+	Port             string
+	NoDelete         bool
+	HideAPIWarning   bool
+	MultiSwitchCount int
 
 	// Workers Concurrency Caps
 	DetectingWorkers  int
@@ -48,7 +47,6 @@ func init() {
 	Port = getEnv("WEB_PORT", "8080")
 	_, NoDelete = os.LookupEnv("NO_DELETE")
 	_, HideAPIWarning = os.LookupEnv("HIDE_API_WARNING")
-	_, DisableAutoIngest = os.LookupEnv("DISABLE_AUTO_INGEST")
 	MultiSwitchCount = parseIntEnv("MULTI_SWITCH_COUNT", 5)
 
 	// Workers Concurrency Allocation with Sane Defaults

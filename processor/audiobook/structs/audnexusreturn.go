@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"audiobook-ingest/structs"
 	"fmt"
 	"strings"
 	"time"
@@ -54,27 +55,6 @@ type AudnexusApiBookResponse struct {
 	Title         string               `json:"title"`
 }
 
-type AudioBookMetadata struct {
-	Authors        []string
-	Chapters       []AudnexusApiChapter
-	Description    string
-	Genres         []string
-	Narrators      []string
-	Publisher      string
-	SeriesName     string
-	SeriesPosition string
-	Subtitle       string
-	Year           uint32
-}
-
-func (abm *AudioBookMetadata) ExpectedDuration() time.Duration {
-	var totalMs uint64 = 0
-	for _, ch := range abm.Chapters {
-		totalMs += ch.LengthMs
-	}
-	return time.Duration(totalMs) * time.Millisecond
-}
-
 func (r *AudnexusApiBookResponse) ConvertToAudioBookMetadata() *AudioBookMetadata {
 	authors := make([]string, len(r.Authors))
 	for i, author := range r.Authors {
@@ -101,20 +81,47 @@ func (r *AudnexusApiBookResponse) ConvertToAudioBookMetadata() *AudioBookMetadat
 	}
 
 	return &AudioBookMetadata{
+		Asin:           r.Asin,
 		Authors:        authors,
 		Chapters:       r.Chapters,
 		Description:    r.Description,
 		Genres:         genres,
+		Image:          r.Image,
 		Narrators:      narrators,
 		Publisher:      r.PublisherName,
 		SeriesName:     seriesName,
 		SeriesPosition: seriesPosition,
 		Subtitle:       r.Subtitle,
+		Title:          r.Title,
 		Year:           uint32(r.ReleaseDate.Year()),
 	}
 }
 
-func (a AudioBookMetadata) ToMap() map[string]string {
+type AudioBookMetadata struct {
+	Asin           string
+	Authors        []string
+	Chapters       []AudnexusApiChapter
+	Description    string
+	Genres         []string
+	Image          string
+	Narrators      []string
+	Publisher      string
+	SeriesName     string
+	SeriesPosition string
+	Subtitle       string
+	Title          string
+	Year           uint32
+}
+
+func (abm *AudioBookMetadata) ExpectedDuration() time.Duration {
+	var totalMs uint64 = 0
+	for _, ch := range abm.Chapters {
+		totalMs += ch.LengthMs
+	}
+	return time.Duration(totalMs) * time.Millisecond
+}
+
+func (a *AudioBookMetadata) ToMap() map[string]string {
 	chapters := make([]string, len(a.Chapters))
 	for i, chapter := range a.Chapters {
 		chapters[i] = chapter.Title
@@ -125,11 +132,24 @@ func (a AudioBookMetadata) ToMap() map[string]string {
 		"Chapters":       strings.Join(chapters, ","),
 		"Description":    a.Description,
 		"Genres":         strings.Join(a.Genres, ","),
+		"Image":          a.Image,
 		"Narrators":      strings.Join(a.Narrators, ","),
 		"Publisher":      a.Publisher,
 		"SeriesName":     a.SeriesName,
 		"SeriesPosition": a.SeriesPosition,
 		"Subtitle":       a.Subtitle,
+		"Title":          a.Title,
 		"Year":           fmt.Sprintf("%d", a.Year),
 	}
+}
+
+func (a *AudioBookMetadata) ToChoice() structs.Choice {
+	return structs.Choice{
+		TokenID: a.Asin,
+		Data:    a.ToMap(),
+	}
+}
+
+func (a *AudioBookMetadata) TokenID() string {
+	return a.Asin
 }

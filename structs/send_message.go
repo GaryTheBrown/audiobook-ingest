@@ -42,9 +42,9 @@ type DetectingLogs struct {
 
 type Choice struct {
 	TokenID string            `json:"TokenID"`
-	ImgSrc  string            `json:"ImgSrc"`
 	Data    map[string]string `json:"Data"`
 }
+
 type AddChoices struct {
 	Choices []Choice `json:"Choices"`
 }

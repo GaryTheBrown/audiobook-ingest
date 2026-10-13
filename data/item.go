@@ -1,18 +1,11 @@
 package data
 
 import (
-	"audiobook-ingest/enum"
 	"audiobook-ingest/status"
 	"audiobook-ingest/structs"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
-)
-
-var (
-	SendMessage  func(itemID string, sendType enum.SendType, payloadObj any)
-	CheckTokenID func(item *Item, tokenID string) error
 )
 
 type Item struct {
@@ -28,7 +21,7 @@ type Item struct {
 
 	searchMetadata map[string]string
 	detectingLog   []structs.DetectingLogs
-	choices        []structs.Choice
+	choices        []MetadataInterface
 
 	tokenID         string
 	finalCoverImage string
@@ -49,9 +42,9 @@ func NewItem(fullPath, name, path string, reqConversion bool) *Item {
 	}
 }
 
-func (i *Item) SendBase() {
+func (i *Item) Base() *structs.CreateItem {
 	i.mu.RLock()
-	basePayload := structs.CreateItem{
+	base := structs.CreateItem{
 		AddedAt: i.addedAt,
 		Name:    i.name,
 		Path:    i.path,
@@ -59,7 +52,7 @@ func (i *Item) SendBase() {
 		Status:  i.status,
 	}
 	i.mu.RUnlock()
-	SendMessage(i.id, enum.CreateItem, basePayload)
+	return &base
 }
 
 func (i *Item) ID() string {
@@ -78,8 +71,8 @@ func (i *Item) FullPathName() string {
 
 func (i *Item) SetName(name string) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.name = name
+	i.mu.Unlock()
 }
 
 func (i *Item) Name() string {
@@ -104,8 +97,8 @@ func (i *Item) Image() string {
 
 func (i *Item) SetImage(image string) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.image = image
+	i.mu.Unlock()
 }
 
 func (i *Item) RequiredConversion() bool {
@@ -116,8 +109,8 @@ func (i *Item) RequiredConversion() bool {
 
 func (i *Item) SetRequiredConversion(req bool) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.requiredConversion = req
+	i.mu.Unlock()
 }
 
 func (i *Item) Status() status.Ingest {
@@ -130,22 +123,6 @@ func (i *Item) SetStatus(statusIn status.Ingest) {
 	i.mu.Lock()
 	i.status = statusIn
 	i.mu.Unlock()
-	payload := structs.ChangeStatus{
-		Status: statusIn,
-	}
-	if SendMessage != nil {
-		SendMessage(i.id, enum.ChangeStatus, payload)
-	}
-
-	switch statusIn {
-	case status.Detecting:
-		DetectingQueue <- i.id
-	case status.Converting:
-		ConversionQueue <- i.id
-	case status.Verified:
-		VerificationQueue <- i.id
-	default:
-	}
 }
 
 func (i *Item) TokenID() string {
@@ -153,60 +130,23 @@ func (i *Item) TokenID() string {
 	defer i.mu.RUnlock()
 	return i.tokenID
 }
-func (i *Item) setTokenID(id string, isUserOverride bool) bool {
-	trimmedID := strings.TrimSpace(id)
-
-	if CheckTokenID(i, trimmedID) != nil {
-		if isUserOverride {
-			SendMessage(i.id, enum.AcceptToken, structs.AcceptToken{Accept: false})
-		}
-		return false
-	}
-
-	if SendMessage != nil {
-		acceptPayload := structs.AcceptToken{
-			Accept:  true,
-			TokenID: trimmedID,
-			Name:    i.Name(),
-			ImgSrc:  i.FinalCoverImage(),
-			Data:    i.finalMetadata.ToMap(),
-		}
-
-		SendMessage(i.id, enum.AcceptToken, acceptPayload)
-	}
-	i.SetStatus(status.Converting)
-	return true
-}
-func (i *Item) SetTokenIDManual(id string) bool {
-	return i.setTokenID(id, true)
-}
-
-func (i *Item) SetTokenID(id string) bool {
-	return i.setTokenID(id, false)
+func (i *Item) SetTokenID(tokenID string) {
+	i.mu.Lock()
+	i.tokenID = tokenID
+	i.mu.Unlock()
 }
 
 func (i *Item) AddSearchMetadata(metadata map[string]string) {
 	i.mu.Lock()
 	i.searchMetadata = metadata
 	i.mu.Unlock()
-	if len(metadata) > 0 {
-		payload := structs.AddMetadata{
-			Fields: metadata,
-		}
-		if SendMessage != nil {
-			SendMessage(i.id, enum.AddMetadata, payload)
-		}
-	}
+
 }
 
 func (i *Item) RemoveSearchMetadata() {
 	i.mu.Lock()
-	i.searchMetadata = map[string]string{}
+	i.searchMetadata = nil
 	i.mu.Unlock()
-
-	if SendMessage != nil {
-		SendMessage(i.id, enum.RemoveMetadata, nil)
-	}
 }
 
 func (i *Item) Metadata() map[string]string {
@@ -215,57 +155,45 @@ func (i *Item) Metadata() map[string]string {
 	return i.searchMetadata
 }
 
-func (i *Item) SetChoices(choices []structs.Choice) {
+func (i *Item) SetChoices(choices []MetadataInterface) {
 	i.mu.Lock()
 	i.choices = choices
 	i.mu.Unlock()
-	choicesPayload := structs.AddChoices{
-		Choices: choices,
-	}
-	if SendMessage != nil {
-		SendMessage(i.id, enum.AddChoices, choicesPayload)
-	}
 }
 
 func (i *Item) RemoveChoices() {
 	i.mu.Lock()
-	i.choices = []structs.Choice{}
+	i.choices = []MetadataInterface{}
 	i.mu.Unlock()
-
-	if SendMessage != nil {
-		SendMessage(i.id, enum.RemoveChoices, nil)
-	}
 }
 
-func (i *Item) Choices() []structs.Choice {
+func (i *Item) Choices() []MetadataInterface {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 	return i.choices
 }
 
-func (i *Item) AddDetactingLog(icon, value string) {
-	payload := structs.DetectingLogs{
-		Icon:  icon,
-		Value: value,
+func (i *Item) ChoicesFront() []structs.Choice {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	metadataChoices := i.choices
+	var structChoices []structs.Choice
+	for _, choice := range metadataChoices {
+		structChoices = append(structChoices, choice.ToChoice())
 	}
+	return structChoices
+}
 
+func (i *Item) AddDetactingLog(log structs.DetectingLogs) {
 	i.mu.Lock()
-	i.detectingLog = append(i.detectingLog, payload)
+	i.detectingLog = append(i.detectingLog, log)
 	i.mu.Unlock()
-
-	if SendMessage != nil {
-		SendMessage(i.id, enum.DetectingAddLog, payload)
-	}
 }
 
 func (i *Item) RemoveDetactingLogs() {
 	i.mu.Lock()
 	i.detectingLog = []structs.DetectingLogs{}
 	i.mu.Unlock()
-
-	if SendMessage != nil {
-		SendMessage(i.id, enum.DetectingRemoveLogs, nil)
-	}
 }
 
 func (i *Item) DetectingLogs() []structs.DetectingLogs {
@@ -276,8 +204,8 @@ func (i *Item) DetectingLogs() []structs.DetectingLogs {
 
 func (i *Item) SetFinalCoverImage(imgsrc string) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.finalCoverImage = imgsrc
+	i.mu.Unlock()
 }
 func (i *Item) FinalCoverImage() string {
 	i.mu.RLock()
@@ -293,20 +221,14 @@ func (i *Item) FinalMetadata() MetadataInterface {
 
 func (i *Item) SetFinalMetadata(data MetadataInterface) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.finalMetadata = data
+	i.mu.Unlock()
 }
 
 func (i *Item) SetErrorMessage(errorMessage error) {
 	i.mu.Lock()
-	defer i.mu.Unlock()
 	i.errorMessage = errorMessage
-	if SendMessage != nil {
-		failedMessage := structs.FailedMessage{
-			Message: errorMessage.Error(),
-		}
-		SendMessage(i.id, enum.FailedMessage, failedMessage)
-	}
+	i.mu.Unlock()
 }
 
 func (i *Item) ErrorMessage() error {
@@ -317,12 +239,6 @@ func (i *Item) ErrorMessage() error {
 
 func (i *Item) ClearErrorMessage() {
 	i.mu.RLock()
-	defer i.mu.RUnlock()
 	i.errorMessage = nil
-	if SendMessage != nil {
-		failedMessage := structs.FailedMessage{
-			Message: "",
-		}
-		SendMessage(i.id, enum.FailedMessage, failedMessage)
-	}
+	i.mu.RUnlock()
 }

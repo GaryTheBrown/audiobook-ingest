@@ -168,10 +168,13 @@ export class WSocket {
             if (item) {
                 item.Header.AcceptSubmitToken(acceptData.Accept, acceptData.TokenID);
                 if (acceptData.Accept) {
-                    item.Header.Name = acceptData.Name;
-                    item.SectionConverting.SetImage(acceptData.ImgSrc);
+                    item.Header.Name = acceptData.Data["Name"];
+                    item.SectionConverting.SetImage(acceptData.Data["Image"]);
                     const KeyValueArray: KeyValueTemplate[] = [];
                     for (const [key, value] of Object.entries(acceptData.Data)) {
+                        if (key == "Name" || key == "Image") {
+                            continue;
+                        }
                         KeyValueArray.push(new KeyValueTemplate(key, value));
                     }
                     item.SectionConverting.AddMetadata(KeyValueArray);

@@ -43,21 +43,21 @@ func (ab *AudioBook) checkMetadataJson(item *data.Item) (foundID bool, foundMeta
 
 	fileBytes, err := os.ReadFile(jsonPath)
 	if err != nil {
-		item.AddDetactingLog("⚠️", fmt.Sprintf("Failed to read discovered JSON file: %s", filepath.Base(jsonPath)))
+		addDetactingLog(item, "⚠️", fmt.Sprintf("Failed to read discovered JSON file: %s", filepath.Base(jsonPath)))
 		return
 	}
 
 	var rawMetadata map[string]any
 	if err := json.Unmarshal(fileBytes, &rawMetadata); err != nil {
-		item.AddDetactingLog("❌", fmt.Sprintf("JSON syntax parsing failed for: %s", filepath.Base(jsonPath)))
+		addDetactingLog(item, "❌", fmt.Sprintf("JSON syntax parsing failed for: %s", filepath.Base(jsonPath)))
 		return
 	}
 
-	item.AddDetactingLog("📝", fmt.Sprintf("Successfully parsed and flattened local metadata manifest: %s", filepath.Base(jsonPath)))
+	addDetactingLog(item, "📝", fmt.Sprintf("Successfully parsed and flattened local metadata manifest: %s", filepath.Base(jsonPath)))
 
 	flattenedResult := make(map[string]string)
 	matchedASIN := flattenAndScanForASIN(rawMetadata, flattenedResult, "")
-	item.AddSearchMetadata(flattenedResult)
+	addSearchMetadata(item, flattenedResult)
 
 	tagMap := SortJson(rawMetadata)
 	if matchedASIN == "" {
@@ -70,18 +70,18 @@ func (ab *AudioBook) checkMetadataJson(item *data.Item) (foundID bool, foundMeta
 	}
 
 	if matchedASIN != "" {
-		item.AddDetactingLog("🎯", fmt.Sprintf("Audible ASIN match isolated inside JSON text: %s", matchedASIN))
-		foundID = item.SetTokenID(matchedASIN)
+		addDetactingLog(item, "🎯", fmt.Sprintf("Audible ASIN match isolated inside JSON text: %s", matchedASIN))
+		foundID = ab.SetTokenID(item, matchedASIN, false)
 		return
 	}
 
 	if tagMap["Title"] != "" && tagMap["Author"] != "" {
-		item.AddDetactingLog("✔", fmt.Sprintf("Extracted base fields from JSON -> Title: '%s' | Author: '%s'", tagMap["Title"], tagMap["Author"]))
+		addDetactingLog(item, "✔", fmt.Sprintf("Extracted base fields from JSON -> Title: '%s' | Author: '%s'", tagMap["Title"], tagMap["Author"]))
 		foundMeta = true
 		return
 	}
 
-	item.AddDetactingLog("ℹ", "Local JSON file scanned, but lacked an explicit ASIN identifier or core tag fields.")
+	addDetactingLog(item, "ℹ", "Local JSON file scanned, but lacked an explicit ASIN identifier or core tag fields.")
 	return
 }
 

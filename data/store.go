@@ -1,7 +1,6 @@
 package data
 
 import (
-	"audiobook-ingest/enum"
 	"iter"
 	"sync"
 )
@@ -38,9 +37,6 @@ func (s *StoreStruct) Remove(id string) (item *Item, exists bool) {
 	item, exists = s.store[id]
 	if exists {
 		delete(s.store, id)
-		if SendMessage != nil {
-			SendMessage(id, enum.RemoveItem, nil)
-		}
 	}
 	return item, exists
 

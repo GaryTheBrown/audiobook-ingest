@@ -2,7 +2,6 @@ package audiobook
 
 import (
 	"audiobook-ingest/data"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -133,19 +132,15 @@ func (ab *AudioBook) handleMixedM4BAndSplitTracks(basePath string, m4bFiles []st
 		foundMatch := ab.findMatchingM4B(normalizedLooseKey, existingM4Bs)
 
 		if foundMatch {
-
 			for _, track := range tracks {
-				log.Printf("[SIMULATION LOG] loose track prune: Would permanently delete redundant track -> %s", filepath.Base(track))
-				// os.Remove(track)
+				os.Remove(track)
 			}
 		} else {
 			isolatedSubFolder := filepath.Join(basePath, looseBookKey)
-			log.Printf("[SIMULATION LOG] folder create: Would isolate mismatched files into subfolder -> %s", isolatedSubFolder)
-			// os.Mkdir(isolatedSubFolder, 0755)
+			os.Mkdir(isolatedSubFolder, 0755)
 			for _, track := range tracks {
 				dest := filepath.Join(isolatedSubFolder, filepath.Base(track))
-				log.Printf("[SIMULATION LOG] file Move: Would migrate loose track '%s' to -> %s", filepath.Base(track), dest)
-				// os.Rename(track, dest)
+				os.Rename(track, dest)
 			}
 
 			data.Queue(isolatedSubFolder, looseBookKey, true)

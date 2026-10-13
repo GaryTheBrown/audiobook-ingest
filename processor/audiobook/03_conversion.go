@@ -17,12 +17,12 @@ func (ab *AudioBook) Convert(item *data.Item) error {
 	finalM4BPath := filepath.Join(bookFolder, fmt.Sprintf("%s.m4b", item.Name()))
 
 	mergeProgressCallback := func(percent float64) {
-		if data.SendMessage != nil {
+		if SendMessage != nil {
 			progressPayload := structs.ConversionProgressMessage{
 				Percent: percent,
 				Text:    "Merging audio tracks ...",
 			}
-			data.SendMessage(item.ID(), enum.ConversionProgress, progressPayload)
+			SendMessage(item.ID(), enum.ConversionProgress, progressPayload)
 		}
 	}
 
@@ -33,12 +33,12 @@ func (ab *AudioBook) Convert(item *data.Item) error {
 	}
 
 	taggingProgressCallback := func(percent float64) {
-		if data.SendMessage != nil {
+		if SendMessage != nil {
 			progressPayload := structs.ConversionProgressMessage{
 				Percent: percent,
 				Text:    "Embedding metadata tags and chapters...",
 			}
-			data.SendMessage(item.ID(), enum.ConversionProgress, progressPayload)
+			SendMessage(item.ID(), enum.ConversionProgress, progressPayload)
 		}
 	}
 
@@ -54,12 +54,12 @@ func (ab *AudioBook) Convert(item *data.Item) error {
 		return fmt.Errorf("compiled target file missing from output path: %s", finalM4BPath)
 	}
 
-	if data.SendMessage != nil {
+	if SendMessage != nil {
 		completionPayload := structs.ConversionProgressMessage{
 			Percent: 100.0,
 			Text:    "Conversion complete!",
 		}
-		data.SendMessage(item.ID(), enum.ConversionProgress, completionPayload)
+		SendMessage(item.ID(), enum.ConversionProgress, completionPayload)
 	}
 
 	item.SetStatus(status.Verifying)

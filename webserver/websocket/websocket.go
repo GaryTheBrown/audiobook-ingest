@@ -3,6 +3,7 @@ package websocket
 import (
 	"audiobook-ingest/data"
 	"audiobook-ingest/enum"
+	"audiobook-ingest/helpers"
 	"audiobook-ingest/status"
 	"audiobook-ingest/structs"
 	"encoding/json"
@@ -19,7 +20,7 @@ var (
 )
 
 func Setup() {
-	data.SendMessage = SendMessage
+	helpers.SendMessage = SendMessage
 }
 
 func Start() {
@@ -56,7 +57,7 @@ func AddWebsocket(ws *websocket.Conn) {
 
 		funcChoices := func() {
 			choicesPayload := structs.AddChoices{
-				Choices: item.Choices(),
+				Choices: item.ChoicesFront(),
 			}
 			if len(choicesPayload.Choices) > 0 {
 				_ = sendNumericalEnvelope(ws, item.ID(), enum.AddChoices, choicesPayload)

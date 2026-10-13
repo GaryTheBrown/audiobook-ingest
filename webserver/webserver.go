@@ -90,7 +90,6 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 		"RequiredEnvKeys":    processor.Process.EnvKeyNames(),
 		"Instructions":       processor.Process.EnvInstructions(),
 		"ManualSearchFields": processor.Process.GetManualSearchFields(),
-		"DisableAutoIngest":  config.DisableAutoIngest,
 		"MultiSwitchCount":   config.MultiSwitchCount,
 	}
 
