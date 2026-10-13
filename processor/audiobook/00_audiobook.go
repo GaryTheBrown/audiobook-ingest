@@ -44,18 +44,30 @@ func (ab *AudioBook) GetManualSearchFields() []structs.ManualSearchField {
 
 func (ab *AudioBook) SetTokenID(item *data.Item, tokenID string, isUserOverride bool) bool {
 	trimmedID := strings.TrimSpace(tokenID)
-
-	//TODO CHECK THE LIST IN CHOICES AND IF ANY MATCH THEN USE THATS DATA SINCE IT@S ALL FROM THE SAME API
-
-	metadata, err := apis.FetchBookDetailsByID(trimmedID)
-	if err != nil {
-		if isUserOverride {
-			SendMessage(item.ID(), enum.AcceptToken, structs.AcceptToken{Accept: false})
+	var done bool = false
+	choices := item.Choices()
+	if len(choices) > 0 {
+		for _, choice := range choices {
+			if choice.TokenID() == tokenID {
+				done = true
+				item.SetFinalMetadata(choice)
+				break
+			}
 		}
-		return false
 	}
 
-	item.SetFinalMetadata(metadata)
+	if !done {
+		metadata, err := apis.FetchBookDetailsByID(trimmedID)
+		if err != nil {
+			if isUserOverride {
+				SendMessage(item.ID(), enum.AcceptToken, structs.AcceptToken{Accept: false})
+			}
+			return false
+		}
+
+		item.SetFinalMetadata(metadata)
+	}
+
 	item.SetTokenID(tokenID)
 
 	if SendMessage != nil {
