@@ -3,18 +3,16 @@ package audiobook
 import (
 	"audiobook-ingest/config"
 	"audiobook-ingest/data"
+	"audiobook-ingest/processor/audiobook/apis"
 	"audiobook-ingest/status"
-	"bytes"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
-func (ab *AudioBook) HandleVerifiedStage(item *data.Item) error {
+func (ab *AudioBook) Export(item *data.Item) error {
 	bookFolder := item.FullPathName()
 	m4bName := fmt.Sprintf("%s.m4b", item.Name())
 	srcPath := filepath.Join(bookFolder, m4bName)
@@ -28,43 +26,54 @@ func (ab *AudioBook) HandleVerifiedStage(item *data.Item) error {
 
 	go ab.notifyDownstreamLibraries(item, destPath)
 
-	//TODO HERE NEED TO CLEAN UP FILES IN IMPORT FOLDER
+	dirEntries, err := os.ReadDir(bookFolder)
+	if err != nil {
+	} else {
+		var actualRemainingCount int
+		for _, entry := range dirEntries {
+			if !strings.HasPrefix(entry.Name(), ".") {
+				actualRemainingCount++
+			}
+		}
+
+		if actualRemainingCount == 0 || (actualRemainingCount == 1 && (dirEntries[0].Name() == "cover.jpg" || dirEntries[0].Name() == "cover.png" || dirEntries[0].Name() == "ffmpeg_concat_queue.txt")) {
+			if purgeErr := os.RemoveAll(bookFolder); purgeErr != nil {
+			}
+		} else {
+			_ = os.Remove(filepath.Join(bookFolder, "cover.jpg"))
+			_ = os.Remove(filepath.Join(bookFolder, "cover.png"))
+			_ = os.Remove(filepath.Join(bookFolder, "ffmpeg_concat_queue.txt"))
+			_ = os.Remove(filepath.Join(bookFolder, "ffmpeg_metadata_tags.txt"))
+
+			err = filepath.Walk(bookFolder, func(path string, info os.FileInfo, walkErr error) error {
+				if walkErr != nil {
+					return walkErr
+				}
+
+				if info.IsDir() && path != bookFolder {
+					return filepath.SkipDir
+				}
+
+				if !info.IsDir() {
+					ext := strings.ToLower(filepath.Ext(path))
+					if ext == ".mp3" || ext == ".m4a" {
+						_ = os.Remove(path)
+					}
+				}
+				return nil
+			})
+			if err != nil {
+			}
+		}
+	}
+
 	return nil
 }
 
 func (ab *AudioBook) notifyDownstreamLibraries(item *data.Item, finalExportPath string) {
 	if config.ChaptarrAPIKey != "" {
-		ab.triggerChaptarrIngest(item, finalExportPath)
+		apis.TriggerChaptarrIngest(item, finalExportPath)
 	}
-	// ab.TriggerAudiobookshelfScan()
-}
-
-func (ab *AudioBook) triggerChaptarrIngest(item *data.Item, filePath string) error {
-	targetURL := fmt.Sprintf("%s/api/v1/ingest", config.ChaptarrURL)
-
-	jsonPayload := fmt.Sprintf(`{"asin":"%s","filePath":"%s","title":"%s"}`, item.TokenID(), strings.ReplaceAll(filePath, "\\", "\\\\"), strings.ReplaceAll(item.Name(), `"`, `\"`))
-
-	req, err := http.NewRequest("POST", targetURL, bytes.NewBuffer([]byte(jsonPayload)))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.ChaptarrAPIKey))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "AudiobookIngestStation/1.0.0")
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("chaptarr server rejected notification payload with status: %d", resp.StatusCode)
-	}
-
-	return nil
 }
 
 func moveFileCrossDevice(src, dest string) error {

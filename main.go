@@ -2,6 +2,7 @@ package main
 
 import (
 	"audiobook-ingest/converter"
+	"audiobook-ingest/export"
 	"audiobook-ingest/folder"
 	"audiobook-ingest/metadata"
 	"audiobook-ingest/verifier"
@@ -18,6 +19,8 @@ func main() {
 	converterEngine.StartWorker()
 	verifierEngine := verifier.NewEngine()
 	verifierEngine.StartWorker()
+	ExportEngine := export.NewEngine()
+	ExportEngine.StartWorker()
 	folder.ScanDirectoryRecursive()
 	go folder.StartWatcher()
 	webserver.Start()

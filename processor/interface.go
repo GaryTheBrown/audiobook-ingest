@@ -18,5 +18,5 @@ type Interface interface {
 	SetTokenID(item *data.Item, tokenID string, isUserOverride bool) bool
 	Convert(item *data.Item) error
 	Verify(item *data.Item) error
-	HandleVerifiedStage(item *data.Item) error
+	Export(item *data.Item) error
 }
