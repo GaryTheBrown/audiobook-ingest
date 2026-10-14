@@ -219,7 +219,7 @@ export class WSocket {
                     for (const [key, value] of Object.entries(choiceIn.Data)) {
                         keyvalueData.push(new KeyValueTemplate(key, value));
                     }
-                    finalChoices.push(new ChoiceTemplate(choiceIn.TokenID, choiceIn.ImgSrc, keyvalueData));
+                    finalChoices.push(new ChoiceTemplate(choiceIn.TokenID, choiceIn.Data['Image'], keyvalueData));
                 });
                 item.SectionMultichoice.AddChoices(finalChoices);
             }

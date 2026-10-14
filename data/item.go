@@ -202,9 +202,9 @@ func (i *Item) DetectingLogs() []structs.DetectingLogs {
 	return i.detectingLog
 }
 
-func (i *Item) SetFinalCoverImage(imgsrc string) {
+func (i *Item) SetFinalCoverImage(image string) {
 	i.mu.Lock()
-	i.finalCoverImage = imgsrc
+	i.finalCoverImage = image
 	i.mu.Unlock()
 }
 func (i *Item) FinalCoverImage() string {

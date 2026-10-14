@@ -15,10 +15,10 @@ export class ChoiceTemplate {
     private modalCallback: ((choice: ChoiceTemplate) => void) | null = null;
 
 
-    private elementBuilderHelper(imgSrc: string, data: KeyValueTemplate[], deleteButton: boolean): HTMLElement {
+    private elementBuilderHelper(image: string, data: KeyValueTemplate[], deleteButton: boolean): HTMLElement {
         const new_DOM = document.importNode(ChoiceTemplate.template_DOM.content, true).querySelector("aside") as HTMLElement;
         const img_DOM = new_DOM.querySelector("img") as HTMLImageElement;
-        img_DOM.src = imgSrc;
+        img_DOM.src = image;
         const table_DOM = new_DOM.querySelector("table") as HTMLTableElement;
         data.forEach(keyValue => {
             table_DOM.appendChild(keyValue.Element() as HTMLTableRowElement);
@@ -30,10 +30,10 @@ export class ChoiceTemplate {
         return new_DOM as HTMLElement;
     }
 
-    constructor(tokenID: string, imgSrc: string, data: KeyValueTemplate[]) {
+    constructor(tokenID: string, image: string, data: KeyValueTemplate[]) {
         this.tokenID = tokenID as string;
-        this.dropdownVersion_DOM = this.elementBuilderHelper(imgSrc, data, true) as HTMLElement;
-        this.modalVersion_DOM = this.elementBuilderHelper(imgSrc, data, false) as HTMLElement;
+        this.dropdownVersion_DOM = this.elementBuilderHelper(image, data, true) as HTMLElement;
+        this.modalVersion_DOM = this.elementBuilderHelper(image, data, false) as HTMLElement;
         this.modalButton_DOM = this.modalVersion_DOM.querySelector("button") as HTMLButtonElement;
     }
 

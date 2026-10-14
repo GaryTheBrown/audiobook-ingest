@@ -15,8 +15,8 @@ export class SectionConverting {
         this.progressInfo_DOM = section_DOM.querySelector("div.info") as HTMLTableElement;
     }
 
-    public SetImage(imgSrc: string): void {
-        this.asideImg_DOM.src = imgSrc
+    public SetImage(image: string): void {
+        this.asideImg_DOM.src = image
     }
 
     public AddMetadata(keyValues: KeyValueTemplate[]): void {

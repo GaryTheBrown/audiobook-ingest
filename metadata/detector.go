@@ -29,7 +29,6 @@ func (d *Detector) workerLoop(workerID int) {
 	}
 }
 
-// 💡⚠✔❌🏁
 func (d *Detector) ProcessQueueItem(itemID string) {
 	item, exists := data.Store.GetItem(itemID)
 

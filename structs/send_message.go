@@ -22,8 +22,6 @@ type CreateItem struct {
 type AcceptToken struct {
 	Accept  bool              `json:"Accept"`
 	TokenID string            `json:"TokenID"`
-	Name    string            `json:"Name"`
-	ImgSrc  string            `json:"ImgSrc"`
 	Data    map[string]string `json:"Data"`
 }
 

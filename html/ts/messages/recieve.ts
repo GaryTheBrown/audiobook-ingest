@@ -28,7 +28,6 @@ export interface DetectingAddLogs {
 }
 export interface Choice {
     readonly TokenID: string,
-    readonly ImgSrc: string,
     readonly Data: Record<string, string>,
 }
 export interface AddChoices {
